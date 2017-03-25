@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 				
 				(picture_Pointer_local+k)->r = brightness;
 				(picture_Pointer_local+k)->g = brightness;
-				(picture_Pointer_local+k)->b = 255;
+				(picture_Pointer_local+k)->b = 40;
 			}
 		
 			k++;
