@@ -12,10 +12,10 @@
  * \information A bug with ifndef and define of _myhead_, can't find it
  *
  */
- 
+
 //#ifndef _myhead_
- 
- /* ---- SYSTEM BASED LIBRARYS ---- */
+
+/* ---- SYSTEM BASED LIBRARYS ---- */
 
 #include <sys/types.h>
 #include <sys/time.h>

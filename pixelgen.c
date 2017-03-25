@@ -19,7 +19,7 @@
  *
  *              bug with shared Mem allocation
  */
- 
+
 #include "myhead.h"
 
 struct timeval timer1, timer2, timer3, timer4;
@@ -100,12 +100,12 @@ int main(int argc, char *argv[])
 			
 			case 'z':
 				clear();
-				printf("\nCurrently not supported!\n");
+				printf(BOLD"\nWARNING: Currently not supported!\n"RESET);
 			break;
 			
 			case 'c':
 				clear();
-				printf("\nCurrently not supported!\n");
+				printf(BOLD"\nWARNING: Currently not supported!\n"RESET);
 			break;
 			
 			case '?':
@@ -124,18 +124,19 @@ int main(int argc, char *argv[])
 	clear();
 	
 /* ---- IF ONE PARAMETER INPUT FAILED OR IS NOT CORRECT ---- */
-
+	
 	if (error == 1)
 	{
 		printf(BOLD"\nERROR: One or more Parameters are not correct.\n"RESET);
-		
 		exit(EXIT_FAILURE);
 	}
 	
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
-
+	
+/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
+	
 #if MAKEPIC
 	pFout = fopen("out.ppm", "wb");
 	if (pFout == NULL)
@@ -144,7 +145,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 #endif
-
+	
 /* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
 	
 	picture_Pointer_local = (struct picture *)malloc(width * height * sizeof(struct picture));
@@ -226,16 +227,16 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
 /*------------------------------------------------------------------*/
-
+	
 /* ---- GENERATE TIME STEMP ---- */
-
+	
 #if TIME
 	gettimeofday(&timer1, NULL);
 #endif
-
-/* ---- ALGORITHM CODE FOR COLOR (see source in description) ---- */
 	
-	printf(BOLD"Generating Mandelbrot Pixels...\n"RESET);
+/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
+	
+	printf(BOLD"* Generating Mandelbrot Pixels...\n"RESET);
 	
 	for (y = 0; y < height; y++)
 	{
@@ -245,7 +246,7 @@ int main(int argc, char *argv[])
 			pi = (y - height / 2) / (0.5 * zoom * height) + moveY;
 			
 			newRe = newIm = oldRe = oldIm = 0;
-		
+			
 			for (i = 0; i < iterations; i++)
 			{
 				oldRe = newRe;
@@ -259,7 +260,7 @@ int main(int argc, char *argv[])
 					break;
 				}
 			}
-				
+			
 			if (i == iterations)
 			{
 				(picture_Pointer_local+k)->r = 0;
@@ -278,20 +279,20 @@ int main(int argc, char *argv[])
 			}
 		
 		k++;
-			
+		
 		}
 	}
 	
-	printf(BOLD"Done generating Pixels!\n"RESET);
+	printf(BOLD"* Done generating Pixels!\n"RESET);
 	
 /* ---- GENERATE TIME STAMP ---- */
 	
 #if TIME
 	gettimeofday(&timer2, NULL);
 #endif
-
-/* ---- PRINT EVERY PIXEL IN OUTPUT ---- */
 	
+/* ---- PRINT EVERY PIXEL IN OUTPUT ---- */
+		
 #if DEBUG
 	for (w = 0; w < height*width; w++)
 	{
@@ -302,11 +303,12 @@ int main(int argc, char *argv[])
 	
 	printf("\n");
 #endif
-
+	
+/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
 /* ---- WRITE OUTPUT FILE ---- */
-
+	
 #if MAKEPIC
-	printf(BOLDBLACK BACKYELLOW"Writing file..."RESET"\n");
+	printf(BOLD"* Writing file...\n"RESET);
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
@@ -318,14 +320,16 @@ int main(int argc, char *argv[])
 		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+w)->r, (picture_Pointer_local+w)->g, (picture_Pointer_local+w)->b);
 	}
 	
-	printf(BOLDBLACK BACKYELLOW"Done writing file!"RESET"\n");
+	printf("* Done writing file!\n"RESET);
 #endif
 	
 #if TIME
 	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
-
+	
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
+	
+/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
 	
 #if MAKEPIC
 	error = fclose(pFout);

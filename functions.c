@@ -7,8 +7,8 @@
  *
  */
  
- #include "myhead.h"
- 
+#include "myhead.h"
+
 /*------------------------------------------------------------------*/
 /* F U N C T I O N   D E F I N I T I O N                            */
 /*------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ void helpdesk_2(void)
 	printf(BOLD"RUN writepic before pixelgen!!!\n"RESET);
 	printf(BOLD"A simple programm (pixelgen) calculating a mandelbrot and put pixels\n"RESET);
 	printf(BOLD"into a shared memory, and writepic is writing them into a ppm file\n\n"RESET);
-	printf(ITALIC"OPTIONAL PARAMETERS:\n"RESET);
+	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);
 	printf("- "BOLD"[-width]\t"RESET" to change Image width\n");
 	printf("- "BOLD"[-height]\t"RESET" to change Image height\n");
 	printf("- "BOLD"[-i]\t"RESET" to change Iterations\n");
@@ -70,49 +70,49 @@ void helpdesk_2(void)
 
 int check_number(char *number)
 {
-    char * pch;
-    int i;
-    
-    pch = strchr(number, '.');
-    if (pch != NULL)
-    {
-        printf(BOLD"\nERROR: No floating-point numbers allowed.\n"RESET);
-        return 1;
-    }
-    
-    pch = strchr(number, ',');
-    if (pch != NULL)
-    {
-        printf(BOLD"\nERROR: No floating-point numbers allowed.\n"RESET);
-        return 1;
-    }
-    
-    for (i = 0; i < strnlen(number, STRINGLENGTH); i++)
-    {
-        if (isdigit(number[i]) == 0)
-        {
-            printf(BOLD"\nERROR: Parameter is not a number.\n"RESET);
-            return 1;
-        }
-    }
-    
-    return 0;
+	char * pch;
+	int i;
+	
+	pch = strchr(number, '.');
+	if (pch != NULL)
+	{
+		printf(BOLD"\nERROR: No floating-point numbers allowed.\n"RESET);
+		return 1;
+	}
+	
+	pch = strchr(number, ',');
+	if (pch != NULL)
+	{
+		printf(BOLD"\nERROR: No floating-point numbers allowed.\n"RESET);
+		return 1;
+	}
+	
+	for (i = 0; i < strnlen(number, STRINGLENGTH); i++)
+	{
+		if (isdigit(number[i]) == 0)
+		{
+			printf(BOLD"\nERROR: Parameter is not a number.\n"RESET);
+			return 1;
+		}
+	}
+	
+	return 0;
 }
 
 /* ---- FUNCTION TO AVOID STRINGLEAKS IN MAIN FILE ---- */
 
 int clearOptarg(char *string, char *input)
 {
-    strncpy(string, input, strnlen(input, STRINGLENGTH));
-    string[strlen(input)] = '\0';
-    
-    if (strlen(string) >= STRINGLENGTH)
-    {
-        printf(BOLD"\nERROR: Parameterinput is too long!\n"RESET);
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+	strncpy(string, input, strnlen(input, STRINGLENGTH));
+	string[strlen(input)] = '\0';
+	
+	if (strlen(string) >= STRINGLENGTH)
+	{
+		printf(BOLD"\nERROR: Parameterinput is too long!\n"RESET);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
