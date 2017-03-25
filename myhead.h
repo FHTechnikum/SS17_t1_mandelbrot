@@ -64,7 +64,7 @@
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
 
-#define DEBUG 1
+#define DEBUG 0
 #define TIME 1
 #define MAKEPIC 1
 
