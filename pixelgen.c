@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
 	FILE* pFout = NULL;
 #endif
 	
-	int semaphore1;
-	int semaphore2;
-	int sharedmemid;
+	int semaphore1 = 0;
+	int semaphore2 = 0;
+	int sharedmemid = 0;
 	
 	PICTURE *picture_Pointer_local = NULL;
 	PICTURE *picture_Pointer_shared = NULL;
@@ -123,28 +123,28 @@ int main(int argc, char *argv[])
 	
 	clear();
 	
+#if DEBUG
+	printf(BOLDRED"height: %d\n"RESET, height);
+	printf(BOLDRED"width: %d\n"RESET, width);
+#endif
+	
 /* ---- IF ONE PARAMETER INPUT FAILED OR IS NOT CORRECT ---- */
 	
 	if (error == 1)
 	{
-		printf(BOLD"\nERROR: One or more Parameters are not correct.\n"RESET);
+		perror(BOLD"\nERROR: One or more Parameters are not correct."RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+	if (width > MAXVALUE || height > MAXVALUE)
+	{
+		printf(BOLD"\nERROR: Too high values for resolution, must be less than %d"RESET, MAXVALUE);
 		exit(EXIT_FAILURE);
 	}
 	
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
-	
-/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
-	
-#if MAKEPIC
-	pFout = fopen("out.ppm", "wb");
-	if (pFout == NULL)
-	{
-		perror(BOLD"\nERROR: fopen: couldn't open output file."RESET);
-		exit(EXIT_FAILURE);
-	}
-#endif
 	
 /* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
 	
@@ -163,6 +163,8 @@ int main(int argc, char *argv[])
 	if (keySemaphore == -1)
 	{
 		perror(BOLD"ERROR: ftok: can't generate semaphore key"RESET);
+		
+		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -170,13 +172,15 @@ int main(int argc, char *argv[])
 	if (keySharedMem == -1)
 	{
 		perror(BOLD"ERROR: ftok: can't generate shared mem key"RESET);
+		
+		free(picture_Pointer_local);
 		exit (EXIT_FAILURE);
 	}
 	
 /* ---- GENERATE SHARED MEMORY ---- */
 	
-	sharedmemid = shmget(keySharedMem, width * height * 3, IPC_CREAT | 0666);
-	if (sharedmemid < 0)
+	sharedmemid = shmget(keySharedMem, (width * height * 3), IPC_CREAT | 0666);
+	if (sharedmemid == -1)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate shared memory."RESET);
 		
@@ -206,7 +210,16 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	clear();
+/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
+	
+#if MAKEPIC
+	pFout = fopen("out.ppm", "wb");
+	if (pFout == NULL)
+	{
+		perror(BOLD"\nERROR: fopen: couldn't open output file."RESET);
+		exit(EXIT_FAILURE);
+	}
+#endif
 	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
@@ -278,10 +291,10 @@ int main(int argc, char *argv[])
 				(picture_Pointer_local+k)->b = 255;
 			}
 		
-		k++;
-		
+			k++;
 		}
 	}
+	printf("\n");
 	
 	printf(BOLD"* Done generating Pixels!\n"RESET);
 	

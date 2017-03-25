@@ -68,6 +68,7 @@
 #define TIME 1
 #define MAKEPIC 1
 
+#define MAXVALUE 4000
 #define STRINGLENGTH 500
 
 struct picture
