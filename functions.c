@@ -2,6 +2,9 @@
  *
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
+ * \information Some functions from my previous tasks due to
+ *              ppm handling
+ *
  */
  
  #include "myhead.h"
