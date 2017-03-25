@@ -137,6 +137,11 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
+/* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY FIRST ----- */
+/* ---- REMOVE THAT ---- */
+	
+	system("ipcrm -a");
+	
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
