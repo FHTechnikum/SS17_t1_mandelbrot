@@ -320,7 +320,7 @@ int main(int argc, char *argv[])
 		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+w)->r, (picture_Pointer_local+w)->g, (picture_Pointer_local+w)->b);
 	}
 	
-	printf("* Done writing file!\n"RESET);
+	printf(BOLD"* Done writing file!\n"RESET);
 #endif
 	
 #if TIME
