@@ -6,10 +6,18 @@
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 23.03.2017 - Created
+ *          Rev.: 02, 23.03.2017 - created the main function and parts of its declarations
+ *          Rev.: 03, 24.03.2017 - Created the init of pixelgen.c and searched web for a algorithm
+ *                                 failure present but can't find it.
+ *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
+ *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to check
+ *                                 if algorithm is working -> will remove this after programming the writepic.c files
+ *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
+ *              bug with shared Mem allocation
  */
  
 #include "myhead.h"
@@ -320,7 +328,13 @@ int main(int argc, char *argv[])
 #endif
 	
 #if MAKEPIC
-	fclose(pFout);
+	error = fclose(pFout);
+	if (error == EOF)
+	{
+		perror(BOLD"\nERROR: fclose: Can't close Outputfile."RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
 #endif
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);

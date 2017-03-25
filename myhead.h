@@ -6,8 +6,10 @@
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 23.03.2017 - Created
+ *          Rev.: 02, 25.03.2017 - Added <sys/time.h> library for timestemps
+ *          Rev.: 03, 25.03.2017 - Added some ANSI formats for output
  *
- * \information
+ * \information A bug with ifndef and define of _myhead_, can't find it
  *
  */
  
