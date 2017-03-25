@@ -17,7 +17,7 @@
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
- *              bug with shared Mem allocation
+ *              Bug with Shared Mem allocation if width or height is higher than the default value
  */
 
 #include "myhead.h"
