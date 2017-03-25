@@ -18,6 +18,7 @@
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
  *              Bug with Shared Mem allocation if width or height is higher than the default value
+ *              Need to use ipcs; ipcrm -a first before changing resolution
  */
 
 #include "myhead.h"
@@ -136,12 +137,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	if (width > MAXVALUE || height > MAXVALUE)
-	{
-		printf(BOLD"\nERROR: Too high values for resolution, must be less than %d"RESET, MAXVALUE);
-		exit(EXIT_FAILURE);
-	}
-	
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
@@ -162,7 +157,7 @@ int main(int argc, char *argv[])
 	keySemaphore = ftok("/etc/hostname", 'b');
 	if (keySemaphore == -1)
 	{
-		perror(BOLD"ERROR: ftok: can't generate semaphore key"RESET);
+		perror(BOLD"\nERROR: ftok: can't generate semaphore key"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -171,7 +166,7 @@ int main(int argc, char *argv[])
 	keySharedMem = ftok("/etc/hostname", 'b');
 	if (keySharedMem == -1)
 	{
-		perror(BOLD"ERROR: ftok: can't generate shared mem key"RESET);
+		perror(BOLD"\nERROR: ftok: can't generate shared mem key"RESET);
 		
 		free(picture_Pointer_local);
 		exit (EXIT_FAILURE);
