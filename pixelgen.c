@@ -311,9 +311,8 @@ int main(int argc, char *argv[])
 			k++;
 		}
 	}
-	printf("\n");
 	
-	printf(BOLD"* Done generating Pixels!\n"RESET);
+	printf(BOLD"* Done generating Pixels!\n\n"RESET);
 	
 /* ---- GENERATE TIME STAMP ---- */
 	
