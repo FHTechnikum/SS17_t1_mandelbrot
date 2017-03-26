@@ -12,6 +12,7 @@
  *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
  *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to check
  *                                 if algorithm is working -> will remove this after programming the writepic.c files
+ *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter
  *
  *
  * \information Algorithm with information of
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
 	int width = 800;
 	int height = 460;
 	int iterations = 5000;
+	int colorb = 255;
 	int x, y;
 	
 	double pr, pi;
@@ -40,6 +42,9 @@ int main(int argc, char *argv[])
 	char widthString[STRINGLENGTH];
 	char heightString[STRINGLENGTH];
 	char iterationsString[STRINGLENGTH];
+	char zoomString[STRINGLENGTH];
+	char colorStringB[STRINGLENGTH];
+	
 	
 #if MAKEPIC
 	FILE* pFout = NULL;
@@ -50,7 +55,6 @@ int main(int argc, char *argv[])
 	int sharedmemid = 0;
 	
 	PICTURE *picture_Pointer_local = NULL;
-	PICTURE *picture_Pointer_shared = NULL;
 	
 	SEMUN semaphore1union;
 	SEMUN semaphore2union;
@@ -73,8 +77,10 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
+
+	clear();
 	
-	while ((opt = getopt (argc, argv, "w:h:i:z:c:?")) != -1)
+	while ((opt = getopt (argc, argv, "w:h:i:b:z:?")) != -1)
 	{
 		switch (opt)
 		{
@@ -100,13 +106,19 @@ int main(int argc, char *argv[])
 			break;
 			
 			case 'z':
-				clear();
-				printf(BOLD"\nWARNING: Currently not supported!\n"RESET);
+				error = clearOptarg(zoomString, optarg);
+				error = check_number(zoomString);
+				
+				zoom = strtod(zoomString, &pEnd);
 			break;
 			
-			case 'c':
-				clear();
-				printf(BOLD"\nWARNING: Currently not supported!\n"RESET);
+			case 'b':
+				printf(BOLD"\nWARNING: Only changing Blue Value!\n"RESET);
+				
+				error = clearOptarg(colorStringB, optarg);
+				error = check_number(colorStringB);
+				
+				colorb = strtod(colorStringB, &pEnd);
 			break;
 			
 			case '?':
@@ -122,7 +134,6 @@ int main(int argc, char *argv[])
 /* E R R O R   H A N D L I N G                                      */
 /*------------------------------------------------------------------*/
 	
-	clear();
 	
 #if DEBUG
 	printf(BOLDRED"height: %d\n"RESET, height);
@@ -134,6 +145,12 @@ int main(int argc, char *argv[])
 	if (error == 1)
 	{
 		perror(BOLD"\nERROR: One or more Parameters are not correct."RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+	if (colorb < 0 || colorb > 255)
+	{
+		perror(BOLD"\nERROR: Color value between 0 and 255."RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -288,7 +305,7 @@ int main(int argc, char *argv[])
 				
 				(picture_Pointer_local+k)->r = brightness;
 				(picture_Pointer_local+k)->g = brightness;
-				(picture_Pointer_local+k)->b = 40;
+				(picture_Pointer_local+k)->b = colorb;
 			}
 		
 			k++;
