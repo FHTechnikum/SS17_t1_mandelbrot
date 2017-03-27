@@ -54,11 +54,11 @@ void helpdesk_2(void)
 	printf(BOLD"A simple programm (pixelgen) calculating a mandelbrot and put pixels\n"RESET);
 	printf(BOLD"into a shared memory, and writepic is writing them into a ppm file\n\n"RESET);
 	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);
-	printf("- "BOLD"[-width]\t"RESET" to change Image width\n");
-	printf("- "BOLD"[-height]\t"RESET" to change Image height\n");
+	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");
+	printf("- "BOLD"[-h]\t"RESET" to change Image height\n");
 	printf("- "BOLD"[-i]\t"RESET" to change Iterations\n");
 	printf("- "BOLD"[-z]\t"RESET" to change zoom\n");
-	printf("- "BOLD"[-c]\t"RESET" to change color output\n");
+	printf("- "BOLD"[-b]\t"RESET" to change color output\n");
 	printf("- "BOLD"[-?]\t"RESET" to show this help message\n");
 	
 #if DEBUG
