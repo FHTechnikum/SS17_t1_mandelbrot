@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 	
 	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 	
-	#pragma omp parallel for
+/* ---- Not working #pragma omp parallel for ---- */
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %d -moveX: %d -moveY: %d\n", colorb, iterations, zoom, moveX, moveY);
+	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", colorb, iterations, zoom, moveX, moveY);
 	fprintf(pFout, "%u %u\n", width, height);
 	fprintf(pFout, "255\n");
 	
