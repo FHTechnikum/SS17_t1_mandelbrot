@@ -235,7 +235,6 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
 	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
 	printf(BOLDRED"Sizeof local Pointer: %d\n"RESET, sizeof(picture_Pointer_local));
-	printf(BOLDRED"Sizeof global Pointer: %d\n"RESET, sizeof(picture_Pointer_shared));
 	printf(BOLDRED"Size needed for memory(3): %d\n"RESET, height*width*3);
 	printf(BOLDRED"Size needed for memory(sizeof): %d\n"RESET, height*width*sizeof(struct picture));
 	printf(BOLDRED"Sizeof struct: %d\n"RESET, sizeof(struct picture));
