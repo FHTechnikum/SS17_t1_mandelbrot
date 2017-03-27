@@ -12,7 +12,8 @@
  *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
  *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to check
  *                                 if algorithm is working -> will remove this after programming the writepic.c files
- *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter
+ *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values with 1,2,3 change)
+ *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
  *
  *
  * \information Algorithm with information of
@@ -227,17 +228,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
-	
-#if MAKEPIC
-	pFout = fopen("out.ppm", "wb");
-	if (pFout == NULL)
-	{
-		perror(BOLD"\nERROR: fopen: couldn't open output file."RESET);
-		exit(EXIT_FAILURE);
-	}
-#endif
-	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
@@ -338,6 +328,17 @@ int main(int argc, char *argv[])
 	
 #if MAKEPIC
 	printf(BOLD"* Writing file...\n"RESET);
+	
+/* ---- OPEN OUTPUT-FILE ---- */
+	
+	pFout = fopen("out.ppm", "wb");
+	if (pFout == NULL)
+	{
+		perror(BOLD"\nERROR: fopen: couldn't open output file."RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
