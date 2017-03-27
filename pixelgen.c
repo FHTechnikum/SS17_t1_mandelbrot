@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
 
-/* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY FIRST ----- */
+/* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY ----- */
 /* ---- REMOVE THAT ---- */
 	
 	system("ipcrm -a");
