@@ -34,6 +34,7 @@
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
+#include <omp.h>
 
 //#define _myhead_
 

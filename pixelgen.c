@@ -14,6 +14,7 @@
  *                                 if algorithm is working -> will remove this after programming the writepic.c files
  *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values with 1,2,3 change)
  *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
+ *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
  *
  *
  * \information Algorithm with information of
@@ -114,7 +115,7 @@ int main(int argc, char *argv[])
 			break;
 			
 			case 'b':
-				printf(BOLD"\nWARNING: Only changing Blue Value!\n"RESET);
+				printf(BOLD"\nWARNING: Only in prototype, change this to fix values in release!\n"RESET);
 				
 				error = clearOptarg(colorStringB, optarg);
 				error = check_number(colorStringB);
@@ -258,6 +259,7 @@ int main(int argc, char *argv[])
 	
 	printf(BOLD"* Generating Mandelbrot Pixels...\n"RESET);
 	
+	#pragma omp parallel for
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)
@@ -312,7 +314,7 @@ int main(int argc, char *argv[])
 	
 /* ---- PRINT EVERY PIXEL IN OUTPUT ---- */
 		
-#if DEBUG
+#if DEBUG_PIXEL
 	for (w = 0; w < height*width; w++)
 	{
 		printf(BOLDRED ITALIC"Pixel: %010d RGB: %03d "RESET, w+1, (picture_Pointer_local+w)->r);
@@ -340,6 +342,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
+/* ---- WRITE OUTPUT FILE ---- */
+	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
 	fprintf(pFout, "%u %u\n", width, height);
@@ -350,6 +354,17 @@ int main(int argc, char *argv[])
 		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+w)->r, (picture_Pointer_local+w)->g, (picture_Pointer_local+w)->b);
 	}
 	
+/* ---- CLOSE OUTPUT FILE ---- */
+	
+	error = fclose(pFout);
+	if (error == EOF)
+	{
+		perror(BOLD"\nERROR: fclose: Can't close Outputfile."RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+
+	
 	printf(BOLD"* Done writing file!\n"RESET);
 #endif
 	
@@ -359,17 +374,6 @@ int main(int argc, char *argv[])
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
 	
-/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
-	
-#if MAKEPIC
-	error = fclose(pFout);
-	if (error == EOF)
-	{
-		perror(BOLD"\nERROR: fclose: Can't close Outputfile."RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-#endif
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
 }
