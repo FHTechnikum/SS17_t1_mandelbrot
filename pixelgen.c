@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
-	printf(BOLDRED"iterations: %d\n\n"RESET, iterations);
+	printf(BOLDRED"iterations: %d\n"RESET, iterations);
 #endif
 	
 /*------------------------------------------------------------------*/
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 	
 /* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
 	
-	printf(BOLD"* Generating Mandelbrot Pixels...\n"RESET);
+	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 	
 	#pragma omp parallel for
 	for (y = 0; y < height; y++)
@@ -346,6 +346,7 @@ int main(int argc, char *argv[])
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
+	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %d -moveX: %d -moveY: %d\n", colorb, iterations, zoom, moveX, moveY);
 	fprintf(pFout, "%u %u\n", width, height);
 	fprintf(pFout, "255\n");
 	
