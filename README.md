@@ -13,7 +13,15 @@ Useable parameters
 -w    to change Image width  
 -h    to change Image height  
 -i    to change iterations  
--z    to change zoom  
+-t    to change zoom  
+ -1   for 1st template  
+ -2   for 2nd template  
+ -3   for 3rd template  
+ -4   for 4th template  
+ -5   for 5th template  
+ -6   for 6th template  
+ -7   for 7th template  
+ -8   for 8th template  
 -b    to change blue color output  
 -?    to print help message  
 </pre>

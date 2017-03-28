@@ -1,6 +1,6 @@
 P3
 #Mandelbrot Generator by Sebastian Dichler
-#Used -blue value: 155 -iterations: 3000 -zoom: 200.000000 -moveX: -0.746300 -moveY: 0.110200
+#Used -blue value: 155 -iterations: 3000 -zoom: 0.005000 -moveX: -0.746300 -moveY: 0.110200
 800 460
 255
 107 107 155

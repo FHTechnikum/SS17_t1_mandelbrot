@@ -1,4 +1,4 @@
-/* !* HEADER FILE FOR PICURE TASK
+/* !* HEADER FILE FOR MANDELBROT TASK
  *
  * \description
  *
@@ -14,7 +14,8 @@
  *
  */
 
-//#ifndef _myhead_
+#ifndef _myhead_
+#define _myhead_
 
 /* ---- SYSTEM BASED LIBRARYS ---- */
 
@@ -37,7 +38,6 @@
 #include <ctype.h>
 #include <omp.h>
 
-//#define _myhead_
 
 /* ---- ANSI FORMAT FOR TERMINAL ---- */
 
@@ -98,3 +98,5 @@ void helpdesk_1(void);
 void helpdesk_2(void);
 int check_number(char *number);
 int clearOptarg(char *string, char *input);
+
+#endif /* _myhead_ */
