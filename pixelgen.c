@@ -17,7 +17,7 @@
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
- *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :)
+ *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :) zoom = 1/zoom
  *
  *
  *
