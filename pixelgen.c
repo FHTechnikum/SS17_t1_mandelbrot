@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 
 /* ---- USER OUTPUT ---- */
 	
-	printf(BOLD ITALIC"*** GENERATING MANDELBROT ***\n"RESET);
+	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n"RESET);
 	
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
