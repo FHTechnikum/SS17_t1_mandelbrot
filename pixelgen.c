@@ -325,6 +325,9 @@ int main(int argc, char *argv[])
 	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 	
 /* ---- Not working #pragma omp parallel for (because of break in loop) ---- */
+
+	zoom = 1/zoom;
+	
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)
