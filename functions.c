@@ -57,7 +57,15 @@ void helpdesk_2(void)
 	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");
 	printf("- "BOLD"[-h]\t"RESET" to change Image height\n");
 	printf("- "BOLD"[-i]\t"RESET" to change Iterations\n");
-	printf("- "BOLD"[-t]\t"RESET" to change zoom (use 1, 2, 3)\n");
+	printf("- "BOLD"[-t]\t"RESET" to change picture design\n");
+	printf(" -"BOLD"[1]\t"RESET"  for 1st template\n");
+	printf(" -"BOLD"[2]\t"RESET"  for 2nd template\n");
+	printf(" -"BOLD"[3]\t"RESET"  for 3rd template\n");
+	printf(" -"BOLD"[4]\t"RESET"  for 4th template\n");
+	printf(" -"BOLD"[5]\t"RESET"  for 5th template\n");
+	printf(" -"BOLD"[6]\t"RESET"  for 6th template\n");
+	printf(" -"BOLD"[7]\t"RESET"  for 7th template\n");
+	printf(" -"BOLD"[8]\t"RESET"  for 8th template\n");
 	printf("- "BOLD"[-b]\t"RESET" to change color output\n");
 	printf("- "BOLD"[-?]\t"RESET" to show this help message\n");
 	
