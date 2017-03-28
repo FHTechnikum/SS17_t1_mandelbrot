@@ -24,8 +24,6 @@
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
- *              Bug with Shared Mem allocation if width or height is higher than the default value
- *              Need to use ipcs; ipcrm -a first before changing resolution
  */
 
 #include "myhead.h"
