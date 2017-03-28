@@ -20,6 +20,7 @@
  *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :) zoom = 1/zoom
  *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
  *          Rev.: 13, 28.03.2017 - User output fixes
+ *          Rev.: 14, 28.03.2017 - Added template
  *
  *
  *
@@ -193,6 +194,12 @@ int main(int argc, char *argv[])
 			zoom = 0.00000000000128;
 		break;
 		
+		case 10:
+			moveX = -1.29635437587289;
+			moveY = 0.44185155566229;
+			zoom = 0.000000000001;
+		break;
+		
 		default:
 			moveX = -0.5;
 			moveY = 0;
@@ -203,12 +210,6 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 /* E R R O R   H A N D L I N G                                      */
 /*------------------------------------------------------------------*/
-	
-	
-#if DEBUG
-	printf(BOLDRED"width: %d\n"RESET, width);
-	printf(BOLDRED"height: %d\n"RESET, height);
-#endif
 	
 /* ---- IF ONE PARAMETER INPUT FAILED OR IS NOT CORRECT ---- */
 	
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	if (type < 1 || type > 9)
+	if (type < 1 || type > 10)
 	{
 		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
 		exit(EXIT_FAILURE);
