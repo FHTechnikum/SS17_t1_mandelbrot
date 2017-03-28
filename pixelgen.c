@@ -15,6 +15,9 @@
  *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values with 1,2,3 change)
  *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
+ *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
+ *          Rev.: 10, 28.03.2017 - Added struct for given move and zoom values, currently not working right (using zoom)
+ *
  *
  *
  * \information Algorithm with information of
@@ -39,12 +42,12 @@ int main(int argc, char *argv[])
 	
 	double pr, pi;
 	double newRe, oldRe, newIm, oldIm;
-	double zoom = 1, moveX = -0.5, moveY = 0;
+	double zoom, moveX, moveY;
 	
 	char widthString[STRINGLENGTH];
 	char heightString[STRINGLENGTH];
 	char iterationsString[STRINGLENGTH];
-	char zoomString[STRINGLENGTH];
+	char typeString[STRINGLENGTH];
 	char colorStringB[STRINGLENGTH];
 	
 	
@@ -69,6 +72,7 @@ int main(int argc, char *argv[])
 	int i = 0, k = 0, w = 0;
 	int error = 0;
 	int opt;
+	int type = 0;
 	
 #if TIME
 	double timediff;
@@ -82,7 +86,7 @@ int main(int argc, char *argv[])
 
 	clear();
 	
-	while ((opt = getopt (argc, argv, "w:h:i:b:z:?")) != -1)
+	while ((opt = getopt (argc, argv, "w:h:i:b:t:?")) != -1)
 	{
 		switch (opt)
 		{
@@ -107,11 +111,11 @@ int main(int argc, char *argv[])
 				iterations = strtod(iterationsString, &pEnd);
 			break;
 			
-			case 'z':
-				error = clearOptarg(zoomString, optarg);
-				error = check_number(zoomString);
+			case 't':
+				error = clearOptarg(typeString, optarg);
+				error = check_number(typeString);
 				
-				zoom = strtod(zoomString, &pEnd);
+				type = strtod(typeString, &pEnd);
 			break;
 			
 			case 'b':
@@ -132,14 +136,71 @@ int main(int argc, char *argv[])
 		}
 	}
 	
+	switch (type)
+	{
+		case 1:
+			moveX = -0.7463;
+			moveY = 0.1102;
+			zoom = 0.005;
+		break;
+		
+		case 2:
+			moveX = -0.74529;
+			moveY = 0.113075;
+			zoom = 0.00015;
+		break;
+		
+		case 3:
+			moveX = -0.722;
+			moveY = 0.246;
+			zoom = 0.019;
+		break;
+		
+		case 4:
+			moveX = -0.16070135;
+			moveY = 1.0375665;
+			zoom = 0.00000010;
+		break;
+		
+		case 5:
+			moveX = -0.0452407411;
+			moveY = 0.9868162204352258;
+			zoom = 0.00000000027;
+		break;
+		
+		case 6:
+			moveX = 0.281717921930775;
+			moveY = 0.5771052841488505;
+			zoom = 0.0000000000000192;
+		break;
+		
+		case 7:
+			moveX = 0.432539867562512;
+			moveY = 0.226118675951765;
+			zoom = 0.0000032;
+		break;
+		
+		case 8:
+			moveX = -1.99999911758738;
+			moveY = 0;
+			zoom = 0.00000000000148;
+		break;
+		
+		default:
+			moveX = -0.5;
+			moveY = 0;
+			zoom = 1;
+		break;
+	}
+	
 /*------------------------------------------------------------------*/
 /* E R R O R   H A N D L I N G                                      */
 /*------------------------------------------------------------------*/
 	
 	
 #if DEBUG
-	printf(BOLDRED"height: %d\n"RESET, height);
 	printf(BOLDRED"width: %d\n"RESET, width);
+	printf(BOLDRED"height: %d\n"RESET, height);
 #endif
 	
 /* ---- IF ONE PARAMETER INPUT FAILED OR IS NOT CORRECT ---- */
@@ -152,7 +213,13 @@ int main(int argc, char *argv[])
 	
 	if (colorb < 0 || colorb > 255)
 	{
-		perror(BOLD"\nERROR: Color value between 0 and 255."RESET);
+		perror(BOLD"\nERROR: Color value must be between 0 and 255."RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+	if (type < 0 || type > 8)
+	{
+		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -229,15 +296,19 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
 	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
-	printf(BOLDRED"Sizeof local Pointer: %d\n"RESET, sizeof(picture_Pointer_local));
 	printf(BOLDRED"Size needed for memory(3): %d\n"RESET, height*width*3);
 	printf(BOLDRED"Size needed for memory(sizeof): %d\n"RESET, height*width*sizeof(struct picture));
-	printf(BOLDRED"Sizeof struct: %d\n"RESET, sizeof(struct picture));
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
 	printf(BOLDRED"iterations: %d\n"RESET, iterations);
+	printf(BOLDRED"Type: %d\n", type);
+	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n"RESET, moveX, moveY, zoom);
 #endif
+
+/* ---- USER OUTPUT ---- */
+	
+	printf(BOLD ITALIC"GENERATING MANDELBROT\n"RESET);
 	
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
@@ -253,7 +324,7 @@ int main(int argc, char *argv[])
 	
 	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 	
-/* ---- Not working #pragma omp parallel for ---- */
+/* ---- Not working #pragma omp parallel for (because of break in loop) ---- */
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)

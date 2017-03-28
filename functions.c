@@ -57,7 +57,7 @@ void helpdesk_2(void)
 	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");
 	printf("- "BOLD"[-h]\t"RESET" to change Image height\n");
 	printf("- "BOLD"[-i]\t"RESET" to change Iterations\n");
-	printf("- "BOLD"[-z]\t"RESET" to change zoom\n");
+	printf("- "BOLD"[-t]\t"RESET" to change zoom (use 1, 2, 3)\n");
 	printf("- "BOLD"[-b]\t"RESET" to change color output\n");
 	printf("- "BOLD"[-?]\t"RESET" to show this help message\n");
 	
