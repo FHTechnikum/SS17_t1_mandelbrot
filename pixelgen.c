@@ -19,6 +19,7 @@
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
  *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :) zoom = 1/zoom
  *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
+ *          Rev.: 13, 28.03.2017 - User output fixes
  *
  *
  *
