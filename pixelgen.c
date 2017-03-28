@@ -17,6 +17,7 @@
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
+ *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :)
  *
  *
  *
@@ -110,14 +111,7 @@ int main(int argc, char *argv[])
 				
 				iterations = strtod(iterationsString, &pEnd);
 			break;
-			
-			case 't':
-				error = clearOptarg(typeString, optarg);
-				error = check_number(typeString);
 				
-				type = strtod(typeString, &pEnd);
-			break;
-			
 			case 'b':
 				printf(BOLD"\nWARNING: Only in prototype, change this to fix values in release!\n"RESET);
 				
@@ -125,6 +119,13 @@ int main(int argc, char *argv[])
 				error = check_number(colorStringB);
 				
 				colorb = strtod(colorStringB, &pEnd);
+			break;
+			
+			case 't':
+				error = clearOptarg(typeString, optarg);
+				error = check_number(typeString);
+				
+				type = strtod(typeString, &pEnd);
 			break;
 			
 			case '?':
@@ -308,7 +309,7 @@ int main(int argc, char *argv[])
 
 /* ---- USER OUTPUT ---- */
 	
-	printf(BOLD ITALIC"GENERATING MANDELBROT\n"RESET);
+	printf(BOLD ITALIC"*** GENERATING MANDELBROT ***\n"RESET);
 	
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
