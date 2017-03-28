@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", colorb, iterations, zoom, moveX, moveY);
+	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", colorb, iterations, 1/zoom, moveX, moveY);
 	fprintf(pFout, "%u %u\n", width, height);
 	fprintf(pFout, "255\n");
 	
