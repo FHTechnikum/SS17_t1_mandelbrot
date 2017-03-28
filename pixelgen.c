@@ -137,6 +137,12 @@ int main(int argc, char *argv[])
 	
 	switch (type)
 	{
+		case 0:
+			moveX = -0.75;
+			moveY = 0.1;
+			zoom = 0.008;
+		break;
+		
 		case 1:
 			moveX = -0.7463;
 			moveY = 0.1102;
