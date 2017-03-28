@@ -69,6 +69,7 @@ void helpdesk_2(void)
 	printf(" -"BOLD"[6]\t"RESET"  for 6th template\n");
 	printf(" -"BOLD"[7]\t"RESET"  for 7th template\n");
 	printf(" -"BOLD"[8]\t"RESET"  for 8th template\n");
+	printf(" -"BOLD"[9]\t"RESET"  for 9th template\n");
 	printf("- "BOLD"[-b]\t"RESET" to change color output\n");
 	printf("- "BOLD"[-?]\t"RESET" to show this help message\n");
 	

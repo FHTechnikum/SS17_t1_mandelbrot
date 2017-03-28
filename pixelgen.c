@@ -137,55 +137,55 @@ int main(int argc, char *argv[])
 	
 	switch (type)
 	{
-		case 0:
+		case 1:
 			moveX = -0.75;
 			moveY = 0.1;
 			zoom = 0.008;
 		break;
 		
-		case 1:
+		case 2:
 			moveX = -0.7463;
 			moveY = 0.1102;
 			zoom = 0.005;
 		break;
 		
-		case 2:
+		case 3:
 			moveX = -0.74529;
 			moveY = 0.113075;
 			zoom = 0.00015;
 		break;
 		
-		case 3:
+		case 4:
 			moveX = -0.722;
 			moveY = 0.246;
 			zoom = 0.019;
 		break;
 		
-		case 4:
+		case 5:
 			moveX = -0.16070135;
 			moveY = 1.0375665;
 			zoom = 0.00000010;
 		break;
 		
-		case 5:
+		case 6:
 			moveX = -0.0452407411;
 			moveY = 0.9868162204352258;
 			zoom = 0.00000000027;
 		break;
 		
-		case 6:
+		case 7:
 			moveX = 0.281717921930775;
 			moveY = 0.5771052841488505;
 			zoom = 0.0000000000000192;
 		break;
 		
-		case 7:
+		case 8:
 			moveX = 0.432539867562512;
 			moveY = 0.226118675951765;
 			zoom = 0.0000032;
 		break;
 		
-		case 8:
+		case 9:
 			moveX = -1.99999911758738;
 			moveY = 0;
 			zoom = 0.00000000000148;
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	if (type < 0 || type > 8)
+	if (type < 1 || type > 8)
 	{
 		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
 		exit(EXIT_FAILURE);
