@@ -16,7 +16,7 @@
  *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
- *          Rev.: 10, 28.03.2017 - Added struct for given move and zoom values, currently not working right (using zoom)
+ *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
  *
  *
  *
