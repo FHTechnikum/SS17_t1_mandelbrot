@@ -18,6 +18,7 @@
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
  *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :) zoom = 1/zoom
+ *          Rev.: 12, 28.03.2017 - Changed templates
  *
  *
  *
@@ -186,9 +187,9 @@ int main(int argc, char *argv[])
 		break;
 		
 		case 9:
-			moveX = -1.99999911758738;
+			moveX = -1.99999911758838;
 			moveY = 0;
-			zoom = 0.00000000000148;
+			zoom = 0.00000000000128;
 		break;
 		
 		default:
@@ -222,7 +223,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	if (type < 1 || type > 8)
+	if (type < 1 || type > 9)
 	{
 		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
 		exit(EXIT_FAILURE);

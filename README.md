@@ -22,6 +22,7 @@ Useable parameters
  -6   for 6th template  
  -7   for 7th template  
  -8   for 8th template  
+ -9   for 9th template  
 -b    to change blue color output  
 -?    to print help message  
 </pre>
