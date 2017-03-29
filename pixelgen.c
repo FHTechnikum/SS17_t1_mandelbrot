@@ -22,7 +22,7 @@
  *          Rev.: 13, 28.03.2017 - User output fixes
  *          Rev.: 14, 28.03.2017 - Added template
  *          Rev.: 15, 29.03.2017 - Added another timer and removed the omp library
- *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added something to the algorithm
+ *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added maxrange colorsettigns to algorithm
  *
  *
  *
