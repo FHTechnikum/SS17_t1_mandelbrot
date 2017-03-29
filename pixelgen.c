@@ -40,7 +40,7 @@ struct timeval timer1, timer2, timer3, timer4;
 int main(int argc, char *argv[])
 {
 	int width = 800;
-	int height = 460;
+	int height = 600;
 	int iterations = 5000;
 	int x, y;
 	
