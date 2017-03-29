@@ -1,7 +1,7 @@
 VERSION	= 1.0
 CC	= gcc
 CFLAGS	= -Wall -g -D_REENTRANT -DVERSION=\"$(VERSION)\"
-LDFLAGS	= -lm -fopenmp
+LDFLAGS	= -lm
 
 OBJGEN	= pixelgen.o functions.o myhead.h
 OBJWRI	= writepic.o functions.o myhead.h

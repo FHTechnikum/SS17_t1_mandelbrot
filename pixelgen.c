@@ -21,6 +21,8 @@
  *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
  *          Rev.: 13, 28.03.2017 - User output fixes
  *          Rev.: 14, 28.03.2017 - Added template
+ *          Rev.: 15, 29.03.2017 - Added another timer and removed the omp library
+ *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added something to the algorithm
  *
  *
  *
@@ -31,26 +33,34 @@
 
 #include "myhead.h"
 
+#if TIME
 struct timeval timer1, timer2, timer3, timer4;
-void cntrl_c_handler_client(int dummy);
+#endif
 
 int main(int argc, char *argv[])
 {
 	int width = 800;
 	int height = 460;
 	int iterations = 5000;
-	int colorb = 255;
 	int x, y;
 	
 	double pr, pi;
 	double newRe, oldRe, newIm, oldIm;
 	double zoom, moveX, moveY;
 	
+	int brightnessr;
+	int brightnessg;
+	int brightnessb;
+	double z;
+	double iterations_double;
+	int colorr;
+	int colorg;
+	int colorb;
+	
 	char widthString[STRINGLENGTH];
 	char heightString[STRINGLENGTH];
 	char iterationsString[STRINGLENGTH];
 	char typeString[STRINGLENGTH];
-	char colorStringB[STRINGLENGTH];
 	
 	
 #if MAKEPIC
@@ -88,7 +98,7 @@ int main(int argc, char *argv[])
 
 	clear();
 	
-	while ((opt = getopt (argc, argv, "w:h:i:b:t:?")) != -1)
+	while ((opt = getopt (argc, argv, "w:h:i:t:?")) != -1)
 	{
 		switch (opt)
 		{
@@ -111,15 +121,6 @@ int main(int argc, char *argv[])
 				error = check_number(iterationsString);
 				
 				iterations = strtod(iterationsString, &pEnd);
-			break;
-				
-			case 'b':
-				printf(BOLD"\nWARNING: Only in prototype, change this to fix values in release!\n"RESET);
-				
-				error = clearOptarg(colorStringB, optarg);
-				error = check_number(colorStringB);
-				
-				colorb = strtod(colorStringB, &pEnd);
 			break;
 			
 			case 't':
@@ -144,66 +145,110 @@ int main(int argc, char *argv[])
 			moveX = -0.75;
 			moveY = 0.1;
 			zoom = 0.008;
+			
+			colorr = 60;
+			colorg = -50;
+			colorb = -200;
 		break;
 		
 		case 2:
 			moveX = -0.7463;
 			moveY = 0.1102;
 			zoom = 0.005;
+			
+			colorr = 60;
+			colorg = -50;
+			colorb = -120;
 		break;
 		
 		case 3:
 			moveX = -0.74529;
 			moveY = 0.113075;
 			zoom = 0.00015;
+			
+			colorr = 80;
+			colorg = 50;
+			colorb = 20;
 		break;
 		
-		case 4:
+		case 4: /* ---- GOOD TEMPLATE ---- */
 			moveX = -0.722;
 			moveY = 0.246;
 			zoom = 0.019;
+			
+			colorr = 100;
+			colorg = -10;
+			colorb = -200;
 		break;
 		
-		case 5:
+		case 5: /* ---- CHANGE TEMPLATE / COLOR ALGORITHM ---- */
 			moveX = -0.16070135;
 			moveY = 1.0375665;
 			zoom = 0.00000010;
+			
+			colorr = -100;
+			colorg = -255;
+			colorb = -255;
 		break;
 		
 		case 6:
 			moveX = -0.0452407411;
 			moveY = 0.9868162204352258;
-			zoom = 0.00000000027;
+			zoom = 0.00000000013;
+			
+			colorr = -30;
+			colorg = -180;
+			colorb = -255;
 		break;
 		
-		case 7:
+		case 7: /* ---- CHANGE TEMPLATE / COLOR ALGORITHM ---- */
 			moveX = 0.281717921930775;
 			moveY = 0.5771052841488505;
 			zoom = 0.0000000000000192;
+			
+			colorr = -80;
+			colorg = -140;
+			colorb = -140;
 		break;
 		
 		case 8:
 			moveX = 0.432539867562512;
 			moveY = 0.226118675951765;
 			zoom = 0.0000032;
+			
+			colorr = 30;
+			colorg = -50;
+			colorb = -200;
 		break;
 		
 		case 9:
 			moveX = -1.99999911758838;
 			moveY = 0;
 			zoom = 0.00000000000128;
+			
+			colorr = 100;
+			colorg = -40;
+			colorb = -200;
 		break;
 		
 		case 10:
-			moveX = -1.29635437587289;
+			moveX = -1.296354375872899;
 			moveY = 0.44185155566229;
-			zoom = 0.000000000001;
+			zoom = 0.0000000000006;
+			
+			colorr = 10;
+			colorg = -100;
+			colorb = -200;
 		break;
 		
 		default:
 			moveX = -0.5;
 			moveY = 0;
 			zoom = 1;
+			
+			colorr = 30;
+			colorg = -80;
+			colorb = 100;
 		break;
 	}
 	
@@ -219,13 +264,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	if (colorb < 0 || colorb > 255)
-	{
-		perror(BOLD"\nERROR: Color value must be between 0 and 255."RESET);
-		exit(EXIT_FAILURE);
-	}
-	
-	if (type < 1 || type > 10)
+	if (type < 0 || type > 10)
 	{
 		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
 		exit(EXIT_FAILURE);
@@ -331,8 +370,6 @@ int main(int argc, char *argv[])
 /* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
 	
 	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
-	
-/* ---- Not working #pragma omp parallel for (because of break in loop) ---- */
 
 	zoom = 1/zoom;
 	
@@ -359,21 +396,58 @@ int main(int argc, char *argv[])
 				}
 			}
 			
+/* ---- WRITE BLACK PIXELS ---- */
+			
 			if (i == iterations)
 			{
 				(picture_Pointer_local+k)->r = 0;
 				(picture_Pointer_local+k)->g = 0;
 				(picture_Pointer_local+k)->b = 0;
 			}
+			
+/* ---- WRITE COLORED PIXELS ---- */
+			
 			else
 			{
-				double z = sqrt(newRe * newRe + newIm * newIm);
-				double iterations_double = iterations;
-				int brightness = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double);
+				z = sqrt(newRe * newRe + newIm * newIm);
+				iterations_double = iterations;
+				brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
+				brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
+				brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
 				
-				(picture_Pointer_local+k)->r = brightness;
-				(picture_Pointer_local+k)->g = brightness;
-				(picture_Pointer_local+k)->b = colorb;
+				(picture_Pointer_local+k)->r = brightnessr;
+				(picture_Pointer_local+k)->g = brightnessg;
+				(picture_Pointer_local+k)->b = brightnessb;
+				
+/* ---- COLORS ARE LOWER THAN 0 ---- */
+				
+				if ((picture_Pointer_local+k)->r < 0)
+				{
+					(picture_Pointer_local+k)->r = 0;
+				}
+				if ((picture_Pointer_local+k)->g < 0)
+				{
+					(picture_Pointer_local+k)->g = 0;
+				}
+				if ((picture_Pointer_local+k)->b < 0)
+				{
+					(picture_Pointer_local+k)->b = 0;
+				}
+				
+/* ---- COLORS ARE HIGHER THAN 255 ---- */
+				
+				if ((picture_Pointer_local+k)->r > 255)
+				{
+					(picture_Pointer_local+k)->r = 255;
+				}
+				if ((picture_Pointer_local+k)->g > 255)
+				{
+					(picture_Pointer_local+k)->g = 255;
+				}
+				if ((picture_Pointer_local+k)->b > 255)
+				{
+					(picture_Pointer_local+k)->b = 255;
+				}
 			}
 		
 			k++;
@@ -408,6 +482,10 @@ int main(int argc, char *argv[])
 	printf(BOLD"* Writing file...\n"RESET);
 	
 /* ---- OPEN OUTPUT-FILE ---- */
+
+#if TIME
+	gettimeofday(&timer3, NULL);
+#endif
 	
 	pFout = fopen("out.ppm", "wb");
 	if (pFout == NULL)
@@ -443,12 +521,19 @@ int main(int argc, char *argv[])
 
 	
 	printf(BOLD"* Done writing file!\n"RESET);
+#if TIME
+	gettimeofday(&timer4, NULL);
+#endif
 #endif
 	
 #if TIME
 	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 	
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+	
+	timediff = (timer4.tv_sec+timer4.tv_usec*0.000001)-(timer3.tv_sec+timer3.tv_usec*0.000001);
+	
+	printf(BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
 
 /* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY ----- */

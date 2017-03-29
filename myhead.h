@@ -37,7 +37,6 @@
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
-#include <omp.h>
 
 
 /* ---- ANSI FORMAT FOR TERMINAL ---- */
@@ -99,5 +98,8 @@ void helpdesk_1(void);
 void helpdesk_2(void);
 int check_number(char *number);
 int clearOptarg(char *string, char *input);
+
+void cntrl_c_handler_client(int dummy);
+void cntrl_c_handler_server(int dummy);
 
 #endif /* _myhead_ */
