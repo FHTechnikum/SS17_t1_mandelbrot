@@ -25,6 +25,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include <sys/msg.h>
 
 /* ---- STANDARD LIBRARYS ---- */
 
@@ -66,10 +67,10 @@
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
 
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_PIXEL 0
 #define TIME 1
-#define MAKEPIC 1
+#define MAKEPIC 0
 
 #define STRINGLENGTH 500
 

@@ -11,19 +11,26 @@
  *                                 failure present but can't find it.
  *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
  *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to check
- *                                 if algorithm is working -> will remove this after programming the writepic.c files
- *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values with 1,2,3 change)
+ *                                 if algorithm is working -> will remove this after programming
+ *                                 the writepic.c files
+ *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values
+ *                                 with 1,2,3 change)
  *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
- *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values, currently not working right (using zoom)
- *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :) zoom = 1/zoom
+ *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values,
+ *                                 currently not working right (using zoom)
+ *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :)
+ *                                 zoom = 1/zoom
  *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
  *          Rev.: 13, 28.03.2017 - User output fixes
  *          Rev.: 14, 28.03.2017 - Added template
  *          Rev.: 15, 29.03.2017 - Added another timer and removed the omp library
- *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added maxrange colorsettigns to algorithm
+ *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added
+ *                                 maxrange colorsettigns to algorithm
  *          Rev.: 17, 30.03.2017 - Changed file output
+ *          Rev.: 18, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory to pixelgen
+ *                                 -> filling memory with values
  *
  *
  *
@@ -71,8 +78,11 @@ int main(int argc, char *argv[])
 	int semaphore1 = 0;
 	int semaphore2 = 0;
 	int sharedmemid = 0;
+	long int msqid1 = 0;
+	long int msqid2 = 0;
 	
 	PICTURE *picture_Pointer_local = NULL;
+	PICTURE *picture_Pointer_global = NULL;
 	
 	SEMUN semaphore1union;
 	SEMUN semaphore2union;
@@ -81,8 +91,9 @@ int main(int argc, char *argv[])
 	
 	key_t keySemaphore;
 	key_t keySharedMem;
+	key_t keymsg;
 	
-	int i = 0, k = 0, w = 0;
+	int i = 0, k = 0;
 	int error = 0;
 	int opt;
 	int type = 0;
@@ -96,7 +107,7 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
-
+	
 	clear();
 	
 	while ((opt = getopt (argc, argv, "w:h:i:t:?")) != -1)
@@ -286,7 +297,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-/* ---- GENERATE KEYS FOR SEMAPHORE AND SHARED MEMORY ---- */
+/* ---- GENERATE KEYS FOR SEMAPHORE AND SHARED MEMORY AND MSG ---- */
 	
 	keySemaphore = ftok("/etc/hostname", 'b');
 	if (keySemaphore == -1)
@@ -303,7 +314,42 @@ int main(int argc, char *argv[])
 		perror(BOLD"\nERROR: ftok: can't generate shared mem key"RESET);
 		
 		free(picture_Pointer_local);
-		exit (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- SEND WIDTH AND HEIGHT TO WRITEPIC ---- */
+	
+	keymsg = ftok("/etc/hostname", 'b');
+	if (keymsg == -1)
+	{
+		perror(BOLD"\nERROR: ftok: cant generate msg key"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+	msqid1 = msgget(keymsg, IPC_CREAT | 0666);
+	if (msqid1 >= 0)
+	{
+		if (msgsnd(msqid1, &width, sizeof(width), 0) == -1)
+		{
+			perror(BOLD"\nERROR: msgsnd: cant send width"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+	msqid2 = msgget(keymsg, IPC_CREAT | 0666);
+	if (msqid2 >= 0)
+	{
+		if(msgsnd(msqid2, &height, sizeof(height), 0) == -1)
+		{
+			perror(BOLD"\nERROR: msgsnd: cant send height"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 /* ---- GENERATE SHARED MEMORY ---- */
@@ -344,8 +390,6 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
 	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
-	printf(BOLDRED"Size needed for memory(3): %d\n"RESET, height*width*3);
-	printf(BOLDRED"Size needed for memory(sizeof): %d\n"RESET, height*width*sizeof(struct picture));
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
@@ -476,6 +520,92 @@ int main(int argc, char *argv[])
 	printf("\n");
 #endif
 	
+	
+/* ---- OPEN SEMAPHORE 1 ---- */
+	
+	semaphore1union.val = 1;
+	
+	if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: cant control semaphore 1"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- CLOSE SEMAPHORE 2 ---- */
+	
+	semaphore2union.val = 0;
+	
+	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: cant cotnrol semaphore 2"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- ATTACH SHARED MEMORY ---- */
+	
+	picture_Pointer_global = shmat(sharedmemid, 0, 0);
+	if (picture_Pointer_global == (PICTURE *)-1)
+	{
+		perror(BOLD"\nERROR: shamat: cant attach shared memory"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- REQUEST ACCESS TO SEMAPHORE 1 ---- */
+	
+	semaphore1buffer.sem_num = 0;
+	semaphore1buffer.sem_op = -1;
+	semaphore1buffer.sem_flg = 0;
+	
+	if (semop(semaphore1, &semaphore1buffer, 1) == -1)
+	{
+		perror(BOLD"\nERROR: semop: cant access semaphore 1"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- FILL SHARED MEMORY WITH LOCAL POINTER VALUES ---- */
+	
+	for (i = 0; i < width*height; i++)
+	{
+		(picture_Pointer_global+i)->r = (picture_Pointer_local+i)->r;
+		(picture_Pointer_global+i)->g = (picture_Pointer_local+i)->g;
+		(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
+	}
+	
+	sleep(1);
+	
+/* ---- RELEASE ACCESS TO SEMAPHORE 2 ---- */
+	
+	semaphore2buffer.sem_num = 0;
+	semaphore2buffer.sem_op =  1;
+	semaphore2buffer.sem_flg = 0;
+	
+	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+	{
+		perror(BOLD"\nERROR: semop: cant release access to semaphore 2"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- DETACH SHARED MEMORY ---- */
+	
+	if (shmdt(picture_Pointer_global) == -1)
+	{
+		perror(BOLD"\nERROR: shmdt: cant detach shared memory"RESET);
+		
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+	
 /* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
 /* ---- WRITE OUTPUT FILE ---- */
 	
@@ -505,9 +635,9 @@ int main(int argc, char *argv[])
 	fprintf(pFout, "%u %u\n", width, height);
 	fprintf(pFout, "255\n");
 	
-	for (w = 0; w < height*width; w++)
+	for (i = 0; i < height*width; i++)
 	{
-		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+w)->r, (picture_Pointer_local+w)->g, (picture_Pointer_local+w)->b);
+		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+i)->r, (picture_Pointer_local+i)->g, (picture_Pointer_local+i)->b);
 	}
 	
 /* ---- CLOSE OUTPUT FILE ---- */
@@ -532,15 +662,15 @@ int main(int argc, char *argv[])
 	
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 	
+#if MAKEPIC
 	timediff = (timer4.tv_sec+timer4.tv_usec*0.000001)-(timer3.tv_sec+timer3.tv_usec*0.000001);
-	
+
 	printf(BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+#endif
 #endif
 
 /* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY ----- */
 /* ---- REMOVE THAT ---- */
-	
-	system("ipcrm -a");
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
