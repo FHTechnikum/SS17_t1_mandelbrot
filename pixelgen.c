@@ -23,6 +23,7 @@
  *          Rev.: 14, 28.03.2017 - Added template
  *          Rev.: 15, 29.03.2017 - Added another timer and removed the omp library
  *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added maxrange colorsettigns to algorithm
+ *          Rev.: 17, 30.03.2017 - Changed file output
  *
  *
  *
@@ -248,7 +249,7 @@ int main(int argc, char *argv[])
 			
 			colorr = 30;
 			colorg = -80;
-			colorb = 100;
+			colorb = 80;
 		break;
 	}
 	
@@ -500,7 +501,7 @@ int main(int argc, char *argv[])
 	
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-	fprintf(pFout, "#Used -blue value: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", colorb, iterations, 1/zoom, moveX, moveY);
+	fprintf(pFout, "#Used -template: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", type, iterations, 1/zoom, moveX, moveY);
 	fprintf(pFout, "%u %u\n", width, height);
 	fprintf(pFout, "255\n");
 	

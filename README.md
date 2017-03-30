@@ -14,6 +14,7 @@ Useable parameters
 -h    to change Image height  
 -i    to change iterations  
 -t    to change zoom  
+ -0   the default template  
  -1   for 1st template  
  -2   for 2nd template  
  -3   for 3rd template  

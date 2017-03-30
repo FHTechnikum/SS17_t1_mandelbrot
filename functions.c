@@ -61,6 +61,7 @@ void helpdesk_2(void)
 	printf("- "BOLD"[-h]\t"RESET" to change Image height\n");
 	printf("- "BOLD"[-i]\t"RESET" to change Iterations\n");
 	printf("- "BOLD"[-t]\t"RESET" to change picture design\n");
+	printf(" -"BOLD"[0]\t"RESET"  the default template\n");
 	printf(" -"BOLD"[1]\t"RESET"  for 1st template\n");
 	printf(" -"BOLD"[2]\t"RESET"  for 2nd template\n");
 	printf(" -"BOLD"[3]\t"RESET"  for 3rd template\n");
