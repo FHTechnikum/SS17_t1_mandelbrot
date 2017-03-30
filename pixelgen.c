@@ -31,37 +31,14 @@
  *          Rev.: 17, 30.03.2017 - Changed file output
  *          Rev.: 18, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory to pixelgen
  *                                 -> filling memory with values
+ *          Rev.: 19, 30.03.2017 - Communication is working now
+ *                                 -> add while(1), SIGNAL, and SIGNAL handler
  *
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
-
-MANDELBROT @ v1.0
-Created by Sebastian Dichler, 2017
-Use"-?" for more information.
-
-*** DEBUG MODE ACTIVE ***
-
-Semaphore ID1: 196608
-Semaphore ID2: 196608
-Key SharedMem: 1645281434
-Key Semaphore: 1645281434
-
-width: 800
-height: 600
-iterations: 5000
-Type: 0
--moveX: -0.500000000000000 -moveY: 0.000000000000000 -zoom: 1.000000000000000
-
-*** GENERATING MANDELBROT ***
-
-* Generating Mandelbrot Pixels...
-* Done generating Pixels!
-
-^C
-
  *
  */
 
@@ -380,7 +357,7 @@ int main(int argc, char *argv[])
 	
 /* ---- GENERATE SHARED MEMORY ---- */
 	
-	sharedmemid = shmget(keySharedMem, (width * height * 3), IPC_CREAT | 0666);
+	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
 	if (sharedmemid == -1)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate shared memory."RESET);
@@ -416,6 +393,7 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
 	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
+	printf(BOLDRED"Size: %d\n"RESET, sizeof(PICTURE));
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);

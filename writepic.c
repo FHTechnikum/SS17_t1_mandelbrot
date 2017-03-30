@@ -6,32 +6,13 @@
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 23.03.2017 - Created
- *          Rev.: 02, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory to pixelgen
- *                                 -> read memory with values
+ *          Rev.: 02, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory
+ *          Rev.: 03, 30.03.2017 - Added sharedmemory read
+ *                                 -> add while(1), SIGNAL, and SIGNAl handler
  *
  *
  * \information
  *
-
-MANDELBROT @ v1.0
-Created by Sebastian Dichler, 2017
-Use"-?" for more information.
-
-*** DEBUG MODE ACTIVE ***
-
-
-Start client now...
-Semaphore ID1: 196608
-Semaphore ID2: 196608
-Key SharedMem: 1645281434
-Key Semaphore: 1645281434
-
-Width: 800
-Height: 600
-Waiting for data from client...
-* Writing file...
-Speicherzugriffsfehler
-
  *
  */
 
@@ -79,7 +60,7 @@ struct timeval timer1, timer2;
 	
 	clear();
 	
-	printf(BOLD"\nStart client now...\n"RESET);
+	printf(BOLD"Start client now...\n\n"RESET);
 	
 /* ---- GENERATE KEYS FOR SEMAPHORE AND SHARED MEMORY ---- */
 	
@@ -133,7 +114,7 @@ struct timeval timer1, timer2;
 	
 /* ---- GENERATE SHARED MEMORY ---- */
 	
-	sharedmemid = shmget(keySharedMem, (width * height * 3), IPC_CREAT | 0666);
+	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
 	if (sharedmemid == -1)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate shared memory."RESET);
@@ -171,7 +152,7 @@ struct timeval timer1, timer2;
 	printf(BOLDRED"Height: %d\n"RESET, height);
 #endif
 	
-	printf(BOLD"Waiting for data from client...\n"RESET);
+	printf(BOLD"Waiting for data from client...\n\n"RESET);
 	
 /* ---- OPNE SEMAPHORE 1 ---- */
 	
@@ -255,14 +236,14 @@ struct timeval timer1, timer2;
 		exit(EXIT_FAILURE);
 	}
 	
-	printf(BOLD"* DOne writing file!\n"RESET);
+	printf(BOLD"* Done writing file!\n"RESET);
 	
 #if TIME
 	gettimeofday(&timer2, NULL);
 	
 	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 	
-	printf(BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+	printf(BLACK BACKYELLOW"\nWrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
 /* ---- RELEASE ACCESS TO SEMAPHORE 1 ---- */
 	
