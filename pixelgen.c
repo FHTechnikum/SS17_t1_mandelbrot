@@ -34,6 +34,8 @@
  *                                 -> filling memory with values
  *          Rev.: 19, 30.03.2017 - Communication is working now
  *                                 -> add while(1), SIGNAL, and SIGNAL handler
+ *          Rev.: 20, 31.03.2017 - Changed algorithm ratio, its ratio is now correct with width/height
+ *                                 instead of 1.5
  *
  *
  *
@@ -54,6 +56,8 @@ int main(int argc, char *argv[])
 	int width = 800;
 	int height = 600;
 	int iterations = 5000;
+	double width_double;
+	double height_double;
 	int x, y;
 	
 	double pr, pi;
@@ -422,12 +426,14 @@ int main(int argc, char *argv[])
 	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 
 	zoom = 1/zoom;
+	width_double = width;
+	height_double = height;
 	
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)
 		{
-			pr = 1.5 * (x - width / 2) / (0.5 * zoom * width) + moveX;
+			pr = (width_double/height_double) * (x - width / 2) / (0.5 * zoom * width) + moveX;
 			pi = (y - height / 2) / (0.5 * zoom * height) + moveY;
 			
 			newRe = newIm = oldRe = oldIm = 0;
