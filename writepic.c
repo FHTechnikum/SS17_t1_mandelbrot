@@ -12,29 +12,24 @@
  *
  * \information
  *
+MANDELBROT @ v1.0
 Created by Sebastian Dichler, 2017
 Use"-?" for more information.
 
 *** DEBUG MODE ACTIVE ***
 
+
+Start client now...
 Semaphore ID1: 98304
-Semaphore ID2: 0
+Semaphore ID2: 98304
 Key SharedMem: 1645281434
 Key Semaphore: 1645281434
 
-width: 800
-height: 600
-iterations: 5000
-Type: 0
--moveX: -0.500000000000000 -moveY: 0.000000000000000 -zoom: 1.000000000000000
-
-*** GENERATING MANDELBROT ***
-
-* Generating Mandelbrot Pixels...
-* Done generating Pixels!
-
-
-ERROR: semctl: cant cotnrol semaphore 2: Invalid argument
+Width: 800
+Height: 600
+Waiting for data from client...
+* Writing file...
+Speicherzugriffsfehler
 
  *
  */
