@@ -37,13 +37,15 @@
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
+
+MANDELBROT @ v1.0
 Created by Sebastian Dichler, 2017
 Use"-?" for more information.
 
 *** DEBUG MODE ACTIVE ***
 
-Semaphore ID1: 98304
-Semaphore ID2: 0
+Semaphore ID1: 196608
+Semaphore ID2: 196608
 Key SharedMem: 1645281434
 Key Semaphore: 1645281434
 
@@ -58,8 +60,7 @@ Type: 0
 * Generating Mandelbrot Pixels...
 * Done generating Pixels!
 
-
-ERROR: semctl: cant cotnrol semaphore 2: Invalid argument
+^C
 
  *
  */
@@ -358,7 +359,7 @@ int main(int argc, char *argv[])
 	{
 		if (msgsnd(msqid1, &width, sizeof(width), 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: cant send width"RESET);
+			perror(BOLD"\nERROR: msgsnd: can't send width"RESET);
 			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
@@ -370,7 +371,7 @@ int main(int argc, char *argv[])
 	{
 		if(msgsnd(msqid2, &height, sizeof(height), 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: cant send height"RESET);
+			perror(BOLD"\nERROR: msgsnd: can't send height"RESET);
 			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
@@ -396,6 +397,17 @@ int main(int argc, char *argv[])
 		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 1"RESET);
 		
 		free(picture_Pointer_local);	
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- GENERATE SEMAPHORE 2 ---- */
+	
+	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
+	if (semaphore2 < 0)
+	{
+		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 2"RESET);
+		
+		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -541,7 +553,7 @@ int main(int argc, char *argv[])
 	
 	if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: cant control semaphore 1"RESET);
+		perror(BOLD"\nERROR: semctl: can't control semaphore 1"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -553,7 +565,7 @@ int main(int argc, char *argv[])
 	
 	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: cant cotnrol semaphore 2"RESET);
+		perror(BOLD"\nERROR: semctl: can't cotnrol semaphore 2"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -564,7 +576,7 @@ int main(int argc, char *argv[])
 	picture_Pointer_global = shmat(sharedmemid, 0, 0);
 	if (picture_Pointer_global == (PICTURE *)-1)
 	{
-		perror(BOLD"\nERROR: shamat: cant attach shared memory"RESET);
+		perror(BOLD"\nERROR: shamat: can't attach shared memory"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -578,7 +590,7 @@ int main(int argc, char *argv[])
 	
 	if (semop(semaphore1, &semaphore1buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: cant access semaphore 1"RESET);
+		perror(BOLD"\nERROR: semop: can't access semaphore 1"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -603,7 +615,7 @@ int main(int argc, char *argv[])
 	
 	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: cant release access to semaphore 2"RESET);
+		perror(BOLD"\nERROR: semop: can't release access to semaphore 2"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -613,7 +625,7 @@ int main(int argc, char *argv[])
 	
 	if (shmdt(picture_Pointer_global) == -1)
 	{
-		perror(BOLD"\nERROR: shmdt: cant detach shared memory"RESET);
+		perror(BOLD"\nERROR: shmdt: can't detach shared memory"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);

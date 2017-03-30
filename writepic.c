@@ -12,6 +12,7 @@
  *
  * \information
  *
+
 MANDELBROT @ v1.0
 Created by Sebastian Dichler, 2017
 Use"-?" for more information.
@@ -20,8 +21,8 @@ Use"-?" for more information.
 
 
 Start client now...
-Semaphore ID1: 98304
-Semaphore ID2: 98304
+Semaphore ID1: 196608
+Semaphore ID2: 196608
 Key SharedMem: 1645281434
 Key Semaphore: 1645281434
 
@@ -103,7 +104,7 @@ struct timeval timer1, timer2;
 	keymsg = ftok("/etc/hostname", 'b');
 	if (keymsg == -1)
 	{
-		perror(BOLD"\nERROR: ftok: cant generate msg key"RESET);
+		perror(BOLD"\nERROR: ftok: can't generate msg key"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -113,7 +114,7 @@ struct timeval timer1, timer2;
 	{
 		if (msgrcv(msqid1, &width, sizeof(width), msgtype, 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: cant send width"RESET);
+			perror(BOLD"\nERROR: msgsnd: can't read width"RESET);
 			
 			exit(EXIT_FAILURE);
 		}
@@ -124,7 +125,7 @@ struct timeval timer1, timer2;
 	{
 		if(msgrcv(msqid2, &height, sizeof(height), msgtype, 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: cant send height"RESET);
+			perror(BOLD"\nERROR: msgsnd: can't read height"RESET);
 			
 			exit(EXIT_FAILURE);
 		}
@@ -178,7 +179,7 @@ struct timeval timer1, timer2;
 	
 	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: cant control semaphore 1"RESET);
+		perror(BOLD"\nERROR: semctl: can't control semaphore 1"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -188,7 +189,7 @@ struct timeval timer1, timer2;
 	
 	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: cant control semaphore 2"RESET);
+		perror(BOLD"\nERROR: semctl: can't control semaphore 2"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -197,7 +198,7 @@ struct timeval timer1, timer2;
 	picture_Pointer_global = shmat(sharedmemid, 0, 0);
 	if (picture_Pointer_global == (PICTURE *)-1)
 	{
-		perror(BOLD"ERROR: shamt: cant attach shared memory"RESET);
+		perror(BOLD"ERROR: shamt: can't attach shared memory"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -209,7 +210,7 @@ struct timeval timer1, timer2;
 	
 	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: cant unlock semaphore 2"RESET);
+		perror(BOLD"\nERROR: semop: can't unlock semaphore 2"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -230,7 +231,7 @@ struct timeval timer1, timer2;
 	pFout = fopen("out.ppm", "wb");
 	if (pFout == NULL)
 	{
-		perror(BOLD"\nERROR: fopen: couldnt open output file"RESET);
+		perror(BOLD"\nERROR: fopen: couldn't open output file"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -250,7 +251,7 @@ struct timeval timer1, timer2;
 	error = fclose(pFout);
 	if (error == EOF)
 	{
-		perror(BOLD"\nERROR: fclose: cant close output file"RESET);
+		perror(BOLD"\nERROR: fclose: can't close output file"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -271,7 +272,7 @@ struct timeval timer1, timer2;
 	
 	if (semop(semaphore1, &semaphore1buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: cant unlock semaphore 1"RESET);
+		perror(BOLD"\nERROR: semop: can't unlock semaphore 1"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -279,7 +280,7 @@ struct timeval timer1, timer2;
 	
 	if (shmdt(picture_Pointer_global) == -1)
 	{
-		perror(BOLD"\nERROR: shmdt: cant detach shared memory"RESET);
+		perror(BOLD"\nERROR: shmdt: can't detach shared memory"RESET);
 	}
 	
  	exit(EXIT_SUCCESS);
