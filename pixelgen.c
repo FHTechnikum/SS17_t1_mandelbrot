@@ -1,6 +1,7 @@
 /* !* PIXELGENERATOR PROCESS
  *
- * \description
+ * \description Generates mandelbrot / apfelmänchien figures with different offset
+ *              and zoom
  *
  *
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>

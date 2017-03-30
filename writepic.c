@@ -1,6 +1,7 @@
 /* !* WRITEPICTURE PROCESS
  *
- * \description
+ * \description Reads the pixels from pixelgens shared memory and writes them
+ *              into a ppm P3 picture
  *
  *
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
