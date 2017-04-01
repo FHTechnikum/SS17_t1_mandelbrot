@@ -1,6 +1,6 @@
 /* !* PIXELGENERATOR PROCESS
  *
- * \description Generates mandelbrot / apfelmänchien figures with different offset
+ * \description Generates mandelbrot / apfelmännchien figures with different offset
  *              and zoom
  *
  *
@@ -11,8 +11,9 @@
  *          Rev.: 03, 24.03.2017 - Created the init of pixelgen.c and searched web for a algorithm
  *                                 failure present but can't find it.
  *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
- *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to check
- *                                 if algorithm is working -> will remove this after programming
+ *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to
+ *                                 check if algorithm is working -> will remove this after
+ *                                 programming
  *                                 the writepic.c files
  *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values
  *                                 with 1,2,3 change)
@@ -21,7 +22,8 @@
  *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values,
  *                                 currently not working right (using zoom)
- *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working fine :)
+ *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working
+ *                                 fine :)
  *                                 zoom = 1/zoom
  *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
  *          Rev.: 13, 28.03.2017 - User output fixes
@@ -34,22 +36,50 @@
  *                                 -> filling memory with values
  *          Rev.: 19, 30.03.2017 - Communication is working now
  *                                 -> add while(1), SIGNAL, and SIGNAL handler
- *          Rev.: 20, 31.03.2017 - Changed algorithm ratio, its ratio is now correct with width/height
- *                                 instead of 1.5
+ *          Rev.: 20, 31.03.2017 - Changed algorithm ratio, its ratio is now correct with
+ *                                 width/height instead of 1.5
+ *          Rev.: 21, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
+ *          Rev.: 22, 01.04.2017 - Removed Makefile in pixelgen due to working writepic
  *
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
+ *              CNTRL+C handler with help of Helmut Resch
  *
  *
  */
 
 #include "myhead.h"
 
+/* ---- GLOBAL VARIABLES ---- */
+
+key_t keySemaphore;
+key_t keySharedMem;
+key_t keymsg;
+
+SEMUN semaphore1union;
+SEMUN semaphore2union;
+SEMBUF semaphore1buffer;
+SEMBUF semaphore2buffer;
+
+PICTURE *picture_Pointer_local = NULL;
+
+int semaphore1 = 0;
+int semaphore2 = 0;
+int sharedmemid = 0;
+long int msqid1 = 0;
+long int msqid2 = 0;
+
 #if TIME
-struct timeval timer1, timer2, timer3, timer4;
+struct timeval timer1, timer2;
 #endif
+
+/* ---- FUNCTION DECLARATION ---- */
+
+void cntrl_c_handler_client(int dummy);
+
+/* ---- MAIN FUNCTION ---- */
 
 int main(int argc, char *argv[])
 {
@@ -78,28 +108,7 @@ int main(int argc, char *argv[])
 	char iterationsString[STRINGLENGTH];
 	char typeString[STRINGLENGTH];
 	
-	
-#if MAKEPIC
-	FILE* pFout = NULL;
-#endif
-	
-	int semaphore1 = 0;
-	int semaphore2 = 0;
-	int sharedmemid = 0;
-	long int msqid1 = 0;
-	long int msqid2 = 0;
-	
-	PICTURE *picture_Pointer_local = NULL;
 	PICTURE *picture_Pointer_global = NULL;
-	
-	SEMUN semaphore1union;
-	SEMUN semaphore2union;
-	SEMBUF semaphore1buffer;
-	SEMBUF semaphore2buffer;
-	
-	key_t keySemaphore;
-	key_t keySharedMem;
-	key_t keymsg;
 	
 	int i = 0, k = 0;
 	int error = 0;
@@ -299,7 +308,7 @@ int main(int argc, char *argv[])
 	picture_Pointer_local = (struct picture *)malloc(width * height * sizeof(struct picture));
 	if (picture_Pointer_local == NULL)
 	{
-		perror(BOLD"\nERROR: malloc: Couldn't allocate memory."RESET);
+		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory."RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -310,7 +319,7 @@ int main(int argc, char *argv[])
 	keySemaphore = ftok("/etc/hostname", 'b');
 	if (keySemaphore == -1)
 	{
-		perror(BOLD"\nERROR: ftok: can't generate semaphore key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Semaphore Key"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -319,7 +328,7 @@ int main(int argc, char *argv[])
 	keySharedMem = ftok("/etc/hostname", 'b');
 	if (keySharedMem == -1)
 	{
-		perror(BOLD"\nERROR: ftok: can't generate shared mem key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Shared-Memory Key"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -330,7 +339,7 @@ int main(int argc, char *argv[])
 	keymsg = ftok("/etc/hostname", 'b');
 	if (keymsg == -1)
 	{
-		perror(BOLD"\nERROR: ftok: cant generate msg key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Message Key"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -341,7 +350,7 @@ int main(int argc, char *argv[])
 	{
 		if (msgsnd(msqid1, &width, sizeof(width), 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: can't send width"RESET);
+			perror(BOLD"\nERROR: msgsnd: Can't send width"RESET);
 			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
@@ -353,7 +362,7 @@ int main(int argc, char *argv[])
 	{
 		if(msgsnd(msqid2, &height, sizeof(height), 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: can't send height"RESET);
+			perror(BOLD"\nERROR: msgsnd: Can't send height"RESET);
 			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
@@ -365,7 +374,7 @@ int main(int argc, char *argv[])
 	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
 	if (sharedmemid == -1)
 	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate shared memory."RESET);
+		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -376,7 +385,7 @@ int main(int argc, char *argv[])
 	semaphore1 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore1 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 1"RESET);
+		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
 		
 		free(picture_Pointer_local);	
 		exit(EXIT_FAILURE);
@@ -387,7 +396,7 @@ int main(int argc, char *argv[])
 	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore2 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 2"RESET);
+		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
 		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
@@ -406,283 +415,254 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Type: %d\n", type);
 	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n"RESET, moveX, moveY, zoom);
 #endif
+	
+/*------------------------------------------------------------------*/
+/* P R O G R A M M   S T A R T                                      */
+/*------------------------------------------------------------------*/
 
 /* ---- USER OUTPUT ---- */
 	
 	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n"RESET);
 	
-/*------------------------------------------------------------------*/
-/* P R O G R A M M   S T A R T                                      */
-/*------------------------------------------------------------------*/
+/* ---- CTRL+C HANDLER ---- */
 	
-/* ---- GENERATE TIME STEMP ---- */
+	signal(SIGINT, cntrl_c_handler_client);
 	
-#if TIME
-	gettimeofday(&timer1, NULL);
-#endif
+/* ---- ALGORITHM START ---- */
 	
-/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
-	
-	printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
-
-	zoom = 1/zoom;
-	width_double = width;
-	height_double = height;
-	
-	for (y = 0; y < height; y++)
+	while(1)
 	{
-		for (x = 0; x < width; x++)
+		
+#if TIME
+		gettimeofday(&timer1, NULL);
+#endif
+		
+/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
+		
+		printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
+	
+		zoom = 1/zoom;
+		width_double = width;
+		height_double = height;
+		
+		for (y = 0; y < height; y++)
 		{
-			pr = (width_double/height_double) * (x - width / 2) / (0.5 * zoom * width) + moveX;
-			pi = (y - height / 2) / (0.5 * zoom * height) + moveY;
-			
-			newRe = newIm = oldRe = oldIm = 0;
-			
-			for (i = 0; i < iterations; i++)
+			for (x = 0; x < width; x++)
 			{
-				oldRe = newRe;
-				oldIm = newIm;
+				pr = (width_double/height_double) * (x - width / 2) / (0.5 * zoom * width) + moveX;
+				pi = (y - height / 2) / (0.5 * zoom * height) + moveY;
 				
-				newRe = oldRe * oldRe - oldIm * oldIm + pr;
-				newIm = 2 * oldRe * oldIm + pi;
+				newRe = newIm = oldRe = oldIm = 0;
 				
-				if ((newRe * newRe + newIm * newIm) > 4)
+				for (i = 0; i < iterations; i++)
 				{
-					break;
+					oldRe = newRe;
+					oldIm = newIm;
+					
+					newRe = oldRe * oldRe - oldIm * oldIm + pr;
+					newIm = 2 * oldRe * oldIm + pi;
+					
+					if ((newRe * newRe + newIm * newIm) > 4)
+					{
+						break;
+					}
 				}
-			}
-			
+				
 /* ---- WRITE BLACK PIXELS ---- */
-			
-			if (i == iterations)
-			{
-				(picture_Pointer_local+k)->r = 0;
-				(picture_Pointer_local+k)->g = 0;
-				(picture_Pointer_local+k)->b = 0;
-			}
-			
-/* ---- WRITE COLORED PIXELS ---- */
-			
-			else
-			{
-				z = sqrt(newRe * newRe + newIm * newIm);
-				iterations_double = iterations;
-				brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
-				brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
-				brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
 				
-				(picture_Pointer_local+k)->r = brightnessr;
-				(picture_Pointer_local+k)->g = brightnessg;
-				(picture_Pointer_local+k)->b = brightnessb;
-				
-/* ---- COLORS ARE LOWER THAN 0 ---- */
-				
-				if ((picture_Pointer_local+k)->r < 0)
+				if (i == iterations)
 				{
 					(picture_Pointer_local+k)->r = 0;
-				}
-				if ((picture_Pointer_local+k)->g < 0)
-				{
 					(picture_Pointer_local+k)->g = 0;
-				}
-				if ((picture_Pointer_local+k)->b < 0)
-				{
 					(picture_Pointer_local+k)->b = 0;
 				}
 				
-/* ---- COLORS ARE HIGHER THAN 255 ---- */
+/* ---- WRITE COLORED PIXELS ---- */
 				
-				if ((picture_Pointer_local+k)->r > 255)
+				else
 				{
-					(picture_Pointer_local+k)->r = 255;
+					z = sqrt(newRe * newRe + newIm * newIm);
+					iterations_double = iterations;
+					brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
+					brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
+					brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
+					
+					(picture_Pointer_local+k)->r = brightnessr;
+					(picture_Pointer_local+k)->g = brightnessg;
+					(picture_Pointer_local+k)->b = brightnessb;
+					
+/* ---- COLORS ARE LOWER THAN 0 ---- */
+					
+					if ((picture_Pointer_local+k)->r < 0)
+					{
+						(picture_Pointer_local+k)->r = 0;
+					}
+					if ((picture_Pointer_local+k)->g < 0)
+					{
+						(picture_Pointer_local+k)->g = 0;
+					}
+					if ((picture_Pointer_local+k)->b < 0)
+					{
+						(picture_Pointer_local+k)->b = 0;
+					}
+					
+/* ---- COLORS ARE HIGHER THAN 255 ---- */
+					
+					if ((picture_Pointer_local+k)->r > 255)
+					{
+						(picture_Pointer_local+k)->r = 255;
+					}
+					if ((picture_Pointer_local+k)->g > 255)
+					{
+						(picture_Pointer_local+k)->g = 255;
+					}
+					if ((picture_Pointer_local+k)->b > 255)
+					{
+						(picture_Pointer_local+k)->b = 255;
+					}
 				}
-				if ((picture_Pointer_local+k)->g > 255)
-				{
-					(picture_Pointer_local+k)->g = 255;
-				}
-				if ((picture_Pointer_local+k)->b > 255)
-				{
-					(picture_Pointer_local+k)->b = 255;
-				}
+			
+				k++;
 			}
-		
-			k++;
 		}
-	}
-	
-	printf(BOLD"* Done generating Pixels!\n\n"RESET);
-	
+		
+		printf(BOLD"* Done generating Pixels!\n\n"RESET);
+		
 /* ---- GENERATE TIME STAMP ---- */
-	
+		
 #if TIME
-	gettimeofday(&timer2, NULL);
+		gettimeofday(&timer2, NULL);
 #endif
-	
+		
 /* ---- PRINT EVERY PIXEL IN OUTPUT ---- */
 		
 #if DEBUG_PIXEL
-	for (w = 0; w < height*width; w++)
-	{
-		printf(BOLDRED ITALIC"Pixel: %010d RGB: %03d "RESET, w+1, (picture_Pointer_local+w)->r);
-		printf(BOLDRED ITALIC"%03d "RESET, (picture_Pointer_local+w)->g);
-		printf(BOLDRED ITALIC"%03d | "RESET, (picture_Pointer_local+w)->b);
-	}
-	
-	printf("\n");
+		for (w = 0; w < height*width; w++)
+		{
+			printf(BOLDRED ITALIC"Pixel: %010d RGB: %03d "RESET, w+1, (picture_Pointer_local+w)->r);
+			printf(BOLDRED ITALIC"%03d "RESET, (picture_Pointer_local+w)->g);
+			printf(BOLDRED ITALIC"%03d | "RESET, (picture_Pointer_local+w)->b);
+		}
+		
+		printf("\n");
 #endif
-	
-	
+		
+		
 /* ---- OPEN SEMAPHORE 1 ---- */
-	
-	semaphore1union.val = 1;
-	
-	if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: can't control semaphore 1"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
+		semaphore1union.val = 1;
+		
+		if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- CLOSE SEMAPHORE 2 ---- */
-	
-	semaphore2union.val = 0;
-	
-	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: can't cotnrol semaphore 2"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
+		semaphore2union.val = 0;
+		
+		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Xan't cotnrol Semaphore 2"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- ATTACH SHARED MEMORY ---- */
-	
-	picture_Pointer_global = shmat(sharedmemid, 0, 0);
-	if (picture_Pointer_global == (PICTURE *)-1)
-	{
-		perror(BOLD"\nERROR: shamat: can't attach shared memory"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
+		picture_Pointer_global = shmat(sharedmemid, 0, 0);
+		if (picture_Pointer_global == (PICTURE *)-1)
+		{
+			perror(BOLD"\nERROR: shamat: Xan't attach Shared-Memory"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- REQUEST ACCESS TO SEMAPHORE 1 ---- */
-	
-	semaphore1buffer.sem_num = 0;
-	semaphore1buffer.sem_op = -1;
-	semaphore1buffer.sem_flg = 0;
-	
-	if (semop(semaphore1, &semaphore1buffer, 1) == -1)
-	{
-		perror(BOLD"\nERROR: semop: can't access semaphore 1"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
+		semaphore1buffer.sem_num = 0;
+		semaphore1buffer.sem_op = -1;
+		semaphore1buffer.sem_flg = 0;
+		
+		if (semop(semaphore1, &semaphore1buffer, 1) == -1)
+		{
+			perror(BOLD"\nERROR: semop: Can't access Semaphore 1"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- FILL SHARED MEMORY WITH LOCAL POINTER VALUES ---- */
-	
-	for (i = 0; i < width*height; i++)
-	{
-		(picture_Pointer_global+i)->r = (picture_Pointer_local+i)->r;
-		(picture_Pointer_global+i)->g = (picture_Pointer_local+i)->g;
-		(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
-	}
-	
-	sleep(1);
-	
+		
+		for (i = 0; i < width*height; i++)
+		{
+			(picture_Pointer_global+i)->r = (picture_Pointer_local+i)->r;
+			(picture_Pointer_global+i)->g = (picture_Pointer_local+i)->g;
+			(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
+		}
+		
+		sleep(1);
+		
 /* ---- RELEASE ACCESS TO SEMAPHORE 2 ---- */
-	
-	semaphore2buffer.sem_num = 0;
-	semaphore2buffer.sem_op =  1;
-	semaphore2buffer.sem_flg = 0;
-	
-	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
-	{
-		perror(BOLD"\nERROR: semop: can't release access to semaphore 2"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
+		semaphore2buffer.sem_num = 0;
+		semaphore2buffer.sem_op =  1;
+		semaphore2buffer.sem_flg = 0;
+		
+		if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+		{
+			perror(BOLD"\nERROR: semop: Can't release access to Semaphore 2"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- DETACH SHARED MEMORY ---- */
-	
-	if (shmdt(picture_Pointer_global) == -1)
-	{
-		perror(BOLD"\nERROR: shmdt: can't detach shared memory"RESET);
 		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
+		if (shmdt(picture_Pointer_global) == -1)
+		{
+			perror(BOLD"\nERROR: shmdt: Can't detach Shared-Memory"RESET);
+			
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
 	}
-	
-	
-/* ---- NEEDED FOR MAKEPIC - REMOVE AFTER WRITEPIC WORKS ---- */
-/* ---- WRITE OUTPUT FILE ---- */
-	
-#if MAKEPIC
-	printf(BOLD"* Writing file...\n"RESET);
-	
-/* ---- OPEN OUTPUT-FILE ---- */
-
-#if TIME
-	gettimeofday(&timer3, NULL);
-#endif
-	
-	pFout = fopen("out.ppm", "wb");
-	if (pFout == NULL)
-	{
-		perror(BOLD"\nERROR: fopen: couldn't open output file."RESET);
-		
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- WRITE OUTPUT FILE ---- */
-	
-	fprintf(pFout, "P3\n");
-	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-	fprintf(pFout, "#Used -template: %d -iterations: %d -zoom: %f -moveX: %f -moveY: %f\n", type, iterations, 1/zoom, moveX, moveY);
-	fprintf(pFout, "%u %u\n", width, height);
-	fprintf(pFout, "255\n");
-	
-	for (i = 0; i < height*width; i++)
-	{
-		fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+i)->r, (picture_Pointer_local+i)->g, (picture_Pointer_local+i)->b);
-	}
-	
-/* ---- CLOSE OUTPUT FILE ---- */
-	
-	error = fclose(pFout);
-	if (error == EOF)
-	{
-		perror(BOLD"\nERROR: fclose: Can't close Outputfile."RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-
-	
-	printf(BOLD"* Done writing file!\n"RESET);
-#if TIME
-	gettimeofday(&timer4, NULL);
-#endif
-#endif
 	
 #if TIME
 	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 	
 	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
-	
-#if MAKEPIC
-	timediff = (timer4.tv_sec+timer4.tv_usec*0.000001)-(timer3.tv_sec+timer3.tv_usec*0.000001);
-
-	printf(BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
 #endif
-#endif
-
-/* ---- WORSE USE OF CLEARING SEMAPHORES AND SHARED MEMORY ----- */
-/* ---- REMOVE THAT ---- */
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
+}
+
+/*------------------------------------------------------------------*/
+/* F U N C T I O N S                                                */
+/*------------------------------------------------------------------*/
+
+void cntrl_c_handler_client(int dummy)
+{
+	printf(BOLD"\nYou just typed CTRL+C\nClient is closing connection...\n"RESET);
+	
+/* ---- REQUESTING ACCESS TO SEMAPHORE 2 ---- */
+	
+	semaphore2buffer.sem_num = 0;
+	semaphore2buffer.sem_op = -1;
+	semaphore2buffer.sem_flg = IPC_NOWAIT;
+	
+	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+	{
+		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
+	}
+	
+	free(picture_Pointer_local);
+	exit(EXIT_SUCCESS);
+	
 }

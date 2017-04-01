@@ -10,18 +10,43 @@
  *          Rev.: 02, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory
  *          Rev.: 03, 30.03.2017 - Added sharedmemory read
  *                                 -> add while(1), SIGNAL, and SIGNAl handler
+ *          Rev.: 04, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
  *
  *
- * \information
+ * \information CNTRL+C handler with help of Helmut Resch
  *
  *
  */
 
 #include "myhead.h"
 
+/* ---- GLOBAL VARIABLES ---- */
+
+key_t keySemaphore;
+key_t keySharedMem;
+key_t keymsg;
+
+SEMUN semaphore1union;
+SEMUN semaphore2union;
+SEMBUF semaphore1buffer;
+SEMBUF semaphore2buffer;
+
+int semaphore1;
+int semaphore2;
+int sharedmemid;
+long int msqid1 = 0;
+long int msqid2 = 0;
+long int msgtype = 0;
+
 #if TIME 
 struct timeval timer1, timer2;
 #endif
+
+/* ---- FUNCTION DECLARATION ---- */
+
+void cntrl_c_handler_server(int dummy);
+
+/* ---- MAIN FUNCTION ---- */
  
  int main(int argc, char *argv[])
  {
@@ -30,26 +55,13 @@ struct timeval timer1, timer2;
 	
 	FILE* pFout = NULL;
 	
-	int semaphore1;
-	int semaphore2;
-	int sharedmemid;
-	long int msqid1 = 0;
-	long int msqid2 = 0;
-	long int msgtype = 0;
-	
  	PICTURE *picture_Pointer_global = NULL;
- 	
-	SEMUN semaphore1union;
-	SEMUN semaphore2union;
-	SEMBUF semaphore1buffer;
-	SEMBUF semaphore2buffer;
 	
-	key_t keySemaphore;
-	key_t keySharedMem;
-	key_t keymsg;
-	
+	int k = 0;
 	int i;
 	int error = 0;
+	
+	char filename[STRINGLENGTH];
 	
 #if TIME
 	double timediff;
@@ -68,7 +80,7 @@ struct timeval timer1, timer2;
 	keySemaphore = ftok("/etc/hostname", 'b');
 	if (keySemaphore == -1)
 	{
-		perror(BOLD"\nERROR: ftok: can't generate semaphore key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Semaphore Key"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -76,7 +88,7 @@ struct timeval timer1, timer2;
 	keySharedMem = ftok("/etc/hostname", 'b');
 	if (keySharedMem == -1)
 	{
-		perror(BOLD"\nERROR: ftok: can't generate shared mem key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Shared-Memory Key"RESET);
 		
 		exit (EXIT_FAILURE);
 	}
@@ -86,7 +98,7 @@ struct timeval timer1, timer2;
 	keymsg = ftok("/etc/hostname", 'b');
 	if (keymsg == -1)
 	{
-		perror(BOLD"\nERROR: ftok: can't generate msg key"RESET);
+		perror(BOLD"\nERROR: ftok: Can't generate Message Key"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -96,7 +108,7 @@ struct timeval timer1, timer2;
 	{
 		if (msgrcv(msqid1, &width, sizeof(width), msgtype, 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: can't read width"RESET);
+			perror(BOLD"\nERROR: msgsnd: Can't read width"RESET);
 			
 			exit(EXIT_FAILURE);
 		}
@@ -107,7 +119,7 @@ struct timeval timer1, timer2;
 	{
 		if(msgrcv(msqid2, &height, sizeof(height), msgtype, 0) == -1)
 		{
-			perror(BOLD"\nERROR: msgsnd: can't read height"RESET);
+			perror(BOLD"\nERROR: msgsnd: Can't read height"RESET);
 			
 			exit(EXIT_FAILURE);
 		}
@@ -118,7 +130,7 @@ struct timeval timer1, timer2;
 	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
 	if (sharedmemid == -1)
 	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate shared memory."RESET);
+		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -128,7 +140,7 @@ struct timeval timer1, timer2;
 	semaphore1 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore1 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 1"RESET);
+		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -138,7 +150,7 @@ struct timeval timer1, timer2;
 	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore2 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate semaphore 2"RESET);
+		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
 		
 		exit(EXIT_FAILURE);
 	}
@@ -161,7 +173,7 @@ struct timeval timer1, timer2;
 	
 	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: can't control semaphore 1"RESET);
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -171,7 +183,7 @@ struct timeval timer1, timer2;
 	
 	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
 	{
-		perror(BOLD"\nERROR: semctl: can't control semaphore 2"RESET);
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -180,7 +192,7 @@ struct timeval timer1, timer2;
 	picture_Pointer_global = shmat(sharedmemid, 0, 0);
 	if (picture_Pointer_global == (PICTURE *)-1)
 	{
-		perror(BOLD"ERROR: shamt: can't attach shared memory"RESET);
+		perror(BOLD"ERROR: shamt: Can't attach Shared-Memory"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -192,7 +204,7 @@ struct timeval timer1, timer2;
 	
 	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: can't unlock semaphore 2"RESET);
+		perror(BOLD"\nERROR: semop: Can't unlock Semaphore 2"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -200,70 +212,118 @@ struct timeval timer1, timer2;
 /* P R O G R A M M   S T A R T                                      */
 /*------------------------------------------------------------------*/
 	
-/* ---- GENERATE TIME STEMP ---- */
 	
-#if TIME
-	gettimeofday(&timer1, NULL);
-#endif
-	
-	printf(BOLD"* Writing file...\n"RESET);
-	
-/* ---- OPEN OUTPUT-FILE ---- */
-	
-	pFout = fopen("out.ppm", "wb");
-	if (pFout == NULL)
+	while(1)
 	{
-		perror(BOLD"\nERROR: fopen: couldn't open output file"RESET);
 		
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- WRITE OUTPUT FILE ---- */
-	
-	fprintf(pFout, "P3\n");
-	fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-	fprintf(pFout, "%u %u\n", width, height);
-	fprintf(pFout, "255\n");
-	
-	for (i = 0; i < height*width; i++)
-	{
-		fprintf(pFout, "%u %u %u\n", (picture_Pointer_global+i)->r, (picture_Pointer_global+i)->g, (picture_Pointer_global+i)->b);
-	}
-	
-	error = fclose(pFout);
-	if (error == EOF)
-	{
-		perror(BOLD"\nERROR: fclose: can't close output file"RESET);
-		exit(EXIT_FAILURE);
-	}
-	
-	printf(BOLD"* Done writing file!\n"RESET);
-	
 #if TIME
-	gettimeofday(&timer2, NULL);
-	
-	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
-	
-	printf(BLACK BACKYELLOW"\nWrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+		gettimeofday(&timer1, NULL);
 #endif
+		
+		printf(BOLD"* Writing file...\n"RESET);
+		
+/* ---- OPEN OUTPUT-FILE ---- */
+		
+		sprintf(filename, "out-%.03d.ppm", k);
+		if (strlen(filename) >= STRINGLENGTH)
+		{
+			perror(BOLD"\nERROR: output-filename is too long"RESET);
+			
+			exit(EXIT_FAILURE);
+		}
+		
+		pFout = fopen(filename, "wb");
+		if (pFout == NULL)
+		{
+			perror(BOLD"\nERROR: fopen: Couldn't open output file"RESET);
+			
+			exit(EXIT_FAILURE);
+		}
+		
+/* ---- WRITE OUTPUT FILE ---- */
+		
+		fprintf(pFout, "P3\n");
+		fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
+		fprintf(pFout, "%u %u\n", width, height);
+		fprintf(pFout, "255\n");
+		
+		for (i = 0; i < height*width; i++)
+		{
+			fprintf(pFout, "%u %u %u\n", (picture_Pointer_global+i)->r, (picture_Pointer_global+i)->g, (picture_Pointer_global+i)->b);
+		}
+		
+		error = fclose(pFout);
+		if (error == EOF)
+		{
+			perror(BOLD"\nERROR: fclose: Can't close output file"RESET);
+			exit(EXIT_FAILURE);
+		}
+		
+		printf(BOLD"* Done writing file!\n"RESET);
+		
+#if TIME
+		gettimeofday(&timer2, NULL);
+		
+		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
+		
+		printf(BLACK BACKYELLOW"\nWrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+#endif
+		
 /* ---- RELEASE ACCESS TO SEMAPHORE 1 ---- */
-	
-	semaphore1buffer.sem_num = 0;
-	semaphore1buffer.sem_op =  1;
-	semaphore1buffer.sem_flg = 0;
-	
-	if (semop(semaphore1, &semaphore1buffer, 1) == -1)
-	{
-		perror(BOLD"\nERROR: semop: can't unlock semaphore 1"RESET);
-		exit(EXIT_FAILURE);
-	}
-	
+		
+		semaphore1buffer.sem_num = 0;
+		semaphore1buffer.sem_op =  1;
+		semaphore1buffer.sem_flg = 0;
+		
+		if (semop(semaphore1, &semaphore1buffer, 1) == -1)
+		{
+			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 1"RESET);
+			exit(EXIT_FAILURE);
+		}
+		
 /* ---- DETACH SHARED MEMORY ---- */
-	
-	if (shmdt(picture_Pointer_global) == -1)
-	{
-		perror(BOLD"\nERROR: shmdt: can't detach shared memory"RESET);
+		
+		if (shmdt(picture_Pointer_global) == -1)
+		{
+			perror(BOLD"\nERROR: shmdt: Can't detach Shared-Memory"RESET);
+		}
+		
+		k++;
 	}
 	
  	exit(EXIT_SUCCESS);
  }
+ 
+ /*------------------------------------------------------------------*/
+/* F U N C T I O N S                                                */
+/*------------------------------------------------------------------*/
+
+void cntrl_c_handler_server(int dummy)
+{
+	printf(BOLD"\nYou just typed CTRL+C\nServer is closing everything...\n"RESET);
+	
+/* ---- CLOSING SHARED MEMORY ---- */
+	
+	if (shmctl(sharedmemid, IPC_RMID, NULL) == -1)
+	{
+		perror(BOLD"\nERROR: shmctl: Can't control Shared-Memory, continue..."RESET);
+	}
+	
+/* ---- CLOSING SEMAPHORE 1 ---- */
+	
+	if (semctl(semaphore1, IPC_RMID, 0) == -1)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1, continue..."RESET);
+	}
+	
+/* ---- CLOSING SEMAPHORE 2 ---- */
+	
+	if (semctl(semaphore2, IPC_RMID, 0) == -1)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 2, continue..."RESET);
+	}
+	
+	printf(BOLD"If any error appeared check it manually with ipcs and remove them with ipcrm\n"RESET);
+	
+	exit(EXIT_SUCCESS);
+}

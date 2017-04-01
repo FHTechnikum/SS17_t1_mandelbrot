@@ -70,7 +70,6 @@
 #define DEBUG 1
 #define DEBUG_PIXEL 0
 #define TIME 1
-#define MAKEPIC 0
 
 #define STRINGLENGTH 500
 
