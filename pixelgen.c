@@ -40,12 +40,47 @@
  *                                 width/height instead of 1.5
  *          Rev.: 21, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
  *          Rev.: 22, 01.04.2017 - Removed Makefile in pixelgen due to working writepic
+ *          Rev.: 23, 01.04.2017 - Done but buggy
+ *
+ 
+MANDELBROT @ v1.0
+Created by Sebastian Dichler, 2017
+Use"-?" for more information.
+
+*** DEBUG MODE ACTIVE ***
+
+Semaphore ID1: 196608
+Semaphore ID2: 196608
+Key SharedMem: 1645281434
+Key Semaphore: 1645281434
+Size: 12
+
+width: 800
+height: 600
+iterations: 5000
+Type: 0
+-moveX: -0.500000000000000 -moveY: 0.000000000000000 -zoom: 1.000000000000000
+
+*** GENERATING MANDELBROT ***
+
+
+* Generating Mandelbrot Pixels...
+* Done generating Pixels!
+
+Generated Mandelbrot values within 6.472219 secs
+
+
+* Generating Mandelbrot Pixels...
+Speicherzugriffsfehler
+ 
  *
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *              CNTRL+C handler with help of Helmut Resch
+ *
+ *              Problems with REQUEST ACCESS TO SEMAPHORE 1 at 608
  *
  *
  */
@@ -295,7 +330,7 @@ int main(int argc, char *argv[])
 	
 	if (type < 0 || type > 10)
 	{
-		perror(BOLD"\nERROR: Type value must be between 0 and 8"RESET);
+		perror(BOLD"\nERROR: Type value must be between 0 and 10."RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -309,7 +344,6 @@ int main(int argc, char *argv[])
 	if (picture_Pointer_local == NULL)
 	{
 		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory."RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -320,7 +354,6 @@ int main(int argc, char *argv[])
 	if (keySemaphore == -1)
 	{
 		perror(BOLD"\nERROR: ftok: Can't generate Semaphore Key"RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -329,7 +362,6 @@ int main(int argc, char *argv[])
 	if (keySharedMem == -1)
 	{
 		perror(BOLD"\nERROR: ftok: Can't generate Shared-Memory Key"RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -340,7 +372,6 @@ int main(int argc, char *argv[])
 	if (keymsg == -1)
 	{
 		perror(BOLD"\nERROR: ftok: Can't generate Message Key"RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -351,7 +382,6 @@ int main(int argc, char *argv[])
 		if (msgsnd(msqid1, &width, sizeof(width), 0) == -1)
 		{
 			perror(BOLD"\nERROR: msgsnd: Can't send width"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -363,7 +393,6 @@ int main(int argc, char *argv[])
 		if(msgsnd(msqid2, &height, sizeof(height), 0) == -1)
 		{
 			perror(BOLD"\nERROR: msgsnd: Can't send height"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -375,7 +404,6 @@ int main(int argc, char *argv[])
 	if (sharedmemid == -1)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -386,7 +414,6 @@ int main(int argc, char *argv[])
 	if (semaphore1 < 0)
 	{
 		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
-		
 		free(picture_Pointer_local);	
 		exit(EXIT_FAILURE);
 	}
@@ -397,7 +424,6 @@ int main(int argc, char *argv[])
 	if (semaphore2 < 0)
 	{
 		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-		
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -422,8 +448,30 @@ int main(int argc, char *argv[])
 
 /* ---- USER OUTPUT ---- */
 	
-	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n"RESET);
+	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n\n"RESET);
 	
+/* ---- OPEN SEMAPHORE 1 ---- */
+	
+	semaphore1union.val = 1;
+	
+	if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- CLOSE SEMAPHORE 2 ---- */
+	
+	semaphore2union.val = 0;
+	
+	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Xan't cotnrol Semaphore 2"RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
+
 /* ---- CTRL+C HANDLER ---- */
 	
 	signal(SIGINT, cntrl_c_handler_client);
@@ -526,7 +574,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		
-		printf(BOLD"* Done generating Pixels!\n\n"RESET);
+		printf(BOLD"* Done generating Pixels!\n"RESET);
 		
 /* ---- GENERATE TIME STAMP ---- */
 		
@@ -547,38 +595,12 @@ int main(int argc, char *argv[])
 		printf("\n");
 #endif
 		
-		
-/* ---- OPEN SEMAPHORE 1 ---- */
-		
-		semaphore1union.val = 1;
-		
-		if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-			
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-		
-/* ---- CLOSE SEMAPHORE 2 ---- */
-		
-		semaphore2union.val = 0;
-		
-		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Xan't cotnrol Semaphore 2"RESET);
-			
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-		
 /* ---- ATTACH SHARED MEMORY ---- */
 		
 		picture_Pointer_global = shmat(sharedmemid, 0, 0);
 		if (picture_Pointer_global == (PICTURE *)-1)
 		{
 			perror(BOLD"\nERROR: shamat: Xan't attach Shared-Memory"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -592,7 +614,6 @@ int main(int argc, char *argv[])
 		if (semop(semaphore1, &semaphore1buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't access Semaphore 1"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -617,7 +638,6 @@ int main(int argc, char *argv[])
 		if (semop(semaphore2, &semaphore2buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't release access to Semaphore 2"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -627,17 +647,18 @@ int main(int argc, char *argv[])
 		if (shmdt(picture_Pointer_global) == -1)
 		{
 			perror(BOLD"\nERROR: shmdt: Can't detach Shared-Memory"RESET);
-			
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
-	}
-	
+		
 #if TIME
-	timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
-	
-	printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n\n", timediff);
+		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
+		
+		printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"", timediff);
+		printf("\n\n");
 #endif
+	
+	}
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
