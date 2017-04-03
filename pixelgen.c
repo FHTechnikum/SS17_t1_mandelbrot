@@ -41,6 +41,8 @@
  *          Rev.: 21, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
  *          Rev.: 22, 01.04.2017 - Removed Makefile in pixelgen due to working writepic
  *          Rev.: 23, 01.04.2017 - Done but buggy
+ *          Rev.: 24, 03.04.2017 - Fix in Useroutput
+ *          Rev.: 25, 03.04.2017 - Debug messages for while(1)
  *
  
 MANDELBROT @ v1.0
@@ -597,6 +599,10 @@ int main(int argc, char *argv[])
 		
 /* ---- ATTACH SHARED MEMORY ---- */
 		
+#if DEBUG
+		printf(BOLDRED"Attaching Shared-Memory\n"RESET);
+#endif
+		
 		picture_Pointer_global = shmat(sharedmemid, 0, 0);
 		if (picture_Pointer_global == (PICTURE *)-1)
 		{
@@ -605,7 +611,15 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 		
+#if DEBUG
+		printf(BOLDRED"Attached Shared-Memory\n"RESET);
+#endif
+		
 /* ---- REQUEST ACCESS TO SEMAPHORE 1 ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Requesting access to Semaphore 1\n"RESET);
+#endif
 		
 		semaphore1buffer.sem_num = 0;
 		semaphore1buffer.sem_op = -1;
@@ -618,7 +632,15 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 		
+#if DEBUG
+		printf(BOLDRED"Have access to Semaphore 1\n"RESET);
+#endif
+		
 /* ---- FILL SHARED MEMORY WITH LOCAL POINTER VALUES ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Filling Shared-Memory with values\n"RESET);
+#endif
 		
 		for (i = 0; i < width*height; i++)
 		{
@@ -627,9 +649,17 @@ int main(int argc, char *argv[])
 			(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
 		}
 		
-		sleep(4);
+#if DEBUG
+		printf(BOLDRED"Filled Shared-Memory with values\n"RESET);
+#endif
+		
+		sleep(1);
 		
 /* ---- RELEASE ACCESS TO SEMAPHORE 2 ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Release access to Semaphore 2\n"RESET);
+#endif
 		
 		semaphore2buffer.sem_num = 0;
 		semaphore2buffer.sem_op =  1;
@@ -642,7 +672,15 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 		
+#if DEBUG
+		printf(BOLDRED"Released access to Semaphore 2\n"RESET);
+#endif
+		
 /* ---- DETACH SHARED MEMORY ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Detach Shared-Memory\n"RESET);
+#endif
 		
 		if (shmdt(picture_Pointer_global) == -1)
 		{
@@ -650,6 +688,10 @@ int main(int argc, char *argv[])
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
+		
+#if DEBUG
+		printf(BOLDRED"Detached Shared-Memory\n"RESET);
+#endif
 		
 #if TIME
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);

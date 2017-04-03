@@ -12,6 +12,7 @@
  *                                 -> add while(1), SIGNAL, and SIGNAl handler
  *          Rev.: 04, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
  *          Rev.: 05, 01.04.2017 - Should be done now, but somehow the pixelgen is buggy
+ *          Rev.: 06, 03.04.2017 - Debug messages for while(1)
  *
  
 MANDELBROT @ v1.0
@@ -251,6 +252,10 @@ void cntrl_c_handler_server(int dummy);
 		
 /* ---- ATTACH SHARED MEMORY ---- */
 		
+#if DEBUG
+		printf(BOLDRED"Attaching Shared-Memory\n"RESET);
+#endif
+		
 		picture_Pointer_global = shmat(sharedmemid, 0, 0);
 		if (picture_Pointer_global == (PICTURE *)-1)
 		{
@@ -258,7 +263,15 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 		
+#if DEBUG
+		printf(BOLDRED"Attached Shared-Memory\n"RESET);
+#endif
+		
 /* ---- REQUEST ACCESS TO SEMAPHORE 2 ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Requesting access to Semaphore 2\n"RESET);
+#endif
 		
 		semaphore2buffer.sem_num = 0;
 		semaphore2buffer.sem_op = -1;
@@ -269,6 +282,10 @@ void cntrl_c_handler_server(int dummy);
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 2"RESET);
 			exit(EXIT_FAILURE);
 		}
+		
+#if DEBUG
+		printf(BOLDRED"Have access to Semaphore 2\n"RESET);
+#endif
 			
 #if TIME
 		gettimeofday(&timer1, NULL);
@@ -324,6 +341,10 @@ void cntrl_c_handler_server(int dummy);
 		
 /* ---- RELEASE ACCESS TO SEMAPHORE 1 ---- */
 		
+#if DEBUG
+		printf(BOLDRED"Release access to Semaphore 1\n"RESET);
+#endif
+		
 		semaphore1buffer.sem_num = 0;
 		semaphore1buffer.sem_op =  1;
 		semaphore1buffer.sem_flg = 0;
@@ -334,13 +355,25 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 		
+#if DEBUG
+		printf(BOLDRED"Released access to Semaphore 1\n"RESET);
+#endif
+		
 /* ---- DETACH SHARED MEMORY ---- */
+		
+#if DEBUG
+		printf(BOLDRED"Detach Shared-Memory\n"RESET);
+#endif
 		
 		if (shmdt(picture_Pointer_global) == -1)
 		{
 			perror(BOLD"\nERROR: shmdt: Can't detach Shared-Memory"RESET);
 			exit(EXIT_FAILURE);
 		}
+		
+#if DEBUG
+		printf(BOLDRED"Detached Shared-Memory\n"RESET);
+#endif
 		
 		k++;
 	}
