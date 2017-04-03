@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
 		picture_Pointer_global = shmat(sharedmemid, 0, 0);
 		if (picture_Pointer_global == (PICTURE *)-1)
 		{
-			perror(BOLD"\nERROR: shamat: Xan't attach Shared-Memory"RESET);
+			perror(BOLD"\nERROR: shamat: Can't attach Shared-Memory"RESET);
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -627,7 +627,7 @@ int main(int argc, char *argv[])
 			(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
 		}
 		
-		sleep(1);
+		sleep(4);
 		
 /* ---- RELEASE ACCESS TO SEMAPHORE 2 ---- */
 		
