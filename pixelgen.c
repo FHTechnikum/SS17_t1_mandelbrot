@@ -43,6 +43,7 @@
  *          Rev.: 23, 01.04.2017 - Done but buggy
  *          Rev.: 24, 03.04.2017 - Fix in Useroutput
  *          Rev.: 25, 03.04.2017 - Debug messages for while(1)
+ *          Rev.: 26, 04.04.2017 - New semaphore handling (still buggy)
  *
  
 MANDELBROT @ v1.0
@@ -326,13 +327,13 @@ int main(int argc, char *argv[])
 	
 	if (error == 1)
 	{
-		perror(BOLD"\nERROR: One or more Parameters are not correct."RESET);
+		perror(BOLD"\nERROR: One or more Parameters are not correct"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
 	if (type < 0 || type > 10)
 	{
-		perror(BOLD"\nERROR: Type value must be between 0 and 10."RESET);
+		perror(BOLD"\nERROR: Type value must be between 0 and 10"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -342,10 +343,10 @@ int main(int argc, char *argv[])
 	
 /* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
 	
-	picture_Pointer_local = (struct picture *)malloc(width * height * sizeof(struct picture));
+	picture_Pointer_local = (PICTURE *)malloc(width * height * sizeof(PICTURE));
 	if (picture_Pointer_local == NULL)
 	{
-		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory."RESET);
+		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory"RESET);
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -405,7 +406,7 @@ int main(int argc, char *argv[])
 	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
 	if (sharedmemid == -1)
 	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
+		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory"RESET);
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -415,9 +416,24 @@ int main(int argc, char *argv[])
 	semaphore1 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore1 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
-		free(picture_Pointer_local);	
-		exit(EXIT_FAILURE);
+		semaphore1 = semget(keySemaphore, 1, 0);
+		if (semaphore1 < 0)
+		{
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			free(picture_Pointer_local);	
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		semaphore1union.val = 1;
+	
+		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 /* ---- GENERATE SEMAPHORE 2 ---- */
@@ -425,16 +441,43 @@ int main(int argc, char *argv[])
 	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore2 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
+		semaphore2 = semget(keySemaphore, 1, 0);
+		if (semaphore2 < 0)
+		{
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
 	}
+	else
+	{
+		semaphore2union.val = 0;
+	
+		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+/* ---- OPEN SEMAPHORE 1 ---- */
+	// CREATE SEMAPHORE1 KEY IS AVAILABLE
+	
+	
+/* ---- CLOSE SEMAPHORE 2 ---- */
+	// CREATE SEMPAHORE2 KEY IS NOT AVAILABLE
+	
 	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
+	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
+	printf(BOLDRED"Message ID1: %ld\n"RESET, msqid1);
+	printf(BOLDRED"Message ID2: %ld\n"RESET, msqid2);
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
 	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
+	printf(BOLDRED"Key Message: %d\n"RESET, keymsg);
 	printf(BOLDRED"Size: %d\n"RESET, sizeof(PICTURE));
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
@@ -451,28 +494,6 @@ int main(int argc, char *argv[])
 /* ---- USER OUTPUT ---- */
 	
 	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n\n"RESET);
-	
-/* ---- OPEN SEMAPHORE 1 ---- */
-	
-	semaphore1union.val = 1;
-	
-	if(semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- CLOSE SEMAPHORE 2 ---- */
-	
-	semaphore2union.val = 0;
-	
-	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: Xan't cotnrol Semaphore 2"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
 
 /* ---- CTRL+C HANDLER ---- */
 	
@@ -620,7 +641,7 @@ int main(int argc, char *argv[])
 #if DEBUG
 		printf(BOLDRED"Requesting access to Semaphore 1\n"RESET);
 #endif
-		
+		// PEND ON SEMAPHORE1
 		semaphore1buffer.sem_num = 0;
 		semaphore1buffer.sem_op = -1;
 		semaphore1buffer.sem_flg = 0;
@@ -660,7 +681,7 @@ int main(int argc, char *argv[])
 #if DEBUG
 		printf(BOLDRED"Release access to Semaphore 2\n"RESET);
 #endif
-		
+		// POST SEMAPHORE2 
 		semaphore2buffer.sem_num = 0;
 		semaphore2buffer.sem_op =  1;
 		semaphore2buffer.sem_flg = 0;

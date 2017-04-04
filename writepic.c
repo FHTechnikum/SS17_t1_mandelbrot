@@ -13,6 +13,7 @@
  *          Rev.: 04, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
  *          Rev.: 05, 01.04.2017 - Should be done now, but somehow the pixelgen is buggy
  *          Rev.: 06, 03.04.2017 - Debug messages for while(1)
+ *          Rev.: 07, 04.04.2017 - New semaphore handling (still buggy)
  *
  
 MANDELBROT @ v1.0
@@ -188,8 +189,25 @@ void cntrl_c_handler_server(int dummy);
 	semaphore1 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore1 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
-		exit(EXIT_FAILURE);
+		semaphore1 = semget(keySemaphore, 1, 0);
+		if (semaphore1 < 0)
+		{
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+	
+/* ---- OPNE SEMAPHORE 1 ---- */
+		
+		semaphore1union.val = 1;
+	
+		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 /* ---- GENERATE SEMAPHORE 2 ---- */
@@ -197,9 +215,48 @@ void cntrl_c_handler_server(int dummy);
 	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
 	if (semaphore2 < 0)
 	{
-		perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-		exit(EXIT_FAILURE);
+		semaphore2 = semget(keySemaphore, 1, 0);
+		if (semaphore2 < 0)
+		{
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
+			exit(EXIT_FAILURE);
+		}
 	}
+	else
+	{
+	
+/* ---- CLOSE SEMAPHORE 2 ---- */
+		
+		semaphore2union.val = 0;
+	
+		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+/* ---- OPNE SEMAPHORE 1 ---- */
+	// CREATE SEMAPHORE1 KEY IS AVAILABLE
+	
+	
+/* ---- CLOSE SEMAPHORE 2 ---- */
+	// CREATE SEMAPHORE2 KEY IS NOT AVAILABLE
+	
+	
+#if DEBUG
+	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
+	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
+	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
+	printf(BOLDRED"Message ID1: %ld\n"RESET, msqid1);
+	printf(BOLDRED"Message ID2: %ld\n"RESET, msqid2);
+	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
+	printf(BOLDRED"Key Semaphore: %d\n\n"RESET, keySemaphore);
+	printf(BOLDRED"Key Message: %d\n"RESET, keymsg);
+	
+	printf(BOLDRED"Width: %d\n"RESET, width);
+	printf(BOLDRED"Height: %d\n\n"RESET, height);
+#endif
 	
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
@@ -209,37 +266,7 @@ void cntrl_c_handler_server(int dummy);
 
 	clear();
 	
-#if DEBUG
-	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
-	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
-	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
-	printf(BOLDRED"Key Semaphore: %d\n\n"RESET, keySemaphore);
-	
-	printf(BOLDRED"Width: %d\n"RESET, width);
-	printf(BOLDRED"Height: %d\n\n"RESET, height);
-#endif
-	
 	printf(BOLD ITALIC"*** Waiting for data from client... ***\n\n"RESET);
-	
-/* ---- OPNE SEMAPHORE 1 ---- */
-	
-	semaphore1union.val = 1;
-	
-	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- CLOSE SEMAPHORE 2 ---- */
-	
-	semaphore2union.val = 0;
-	
-	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
-		exit(EXIT_FAILURE);
-	}
 
 /* ---- CTRL+C HANDLER ---- */
 	
@@ -272,7 +299,7 @@ void cntrl_c_handler_server(int dummy);
 #if DEBUG
 		printf(BOLDRED"Requesting access to Semaphore 2\n"RESET);
 #endif
-		
+		// PEND/WAIT ON SEMAPHORE2
 		semaphore2buffer.sem_num = 0;
 		semaphore2buffer.sem_op = -1;
 		semaphore2buffer.sem_flg = 0;
