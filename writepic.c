@@ -196,19 +196,6 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-	
-/* ---- OPNE SEMAPHORE 1 ---- */
-		
-		semaphore1union.val = 1;
-	
-		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-			exit(EXIT_FAILURE);
-		}
-	}
 	
 /* ---- GENERATE SEMAPHORE 2 ---- */
 	
@@ -222,27 +209,30 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-	
-/* ---- CLOSE SEMAPHORE 2 ---- */
-		
-		semaphore2union.val = 0;
-	
-		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
-			exit(EXIT_FAILURE);
-		}
-	}
 	
 /* ---- OPNE SEMAPHORE 1 ---- */
 	// CREATE SEMAPHORE1 KEY IS AVAILABLE
 	
+	semaphore1union.val = 1;
+	
+	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+		exit(EXIT_FAILURE);
+	}
 	
 /* ---- CLOSE SEMAPHORE 2 ---- */
 	// CREATE SEMAPHORE2 KEY IS NOT AVAILABLE
 	
+	semaphore2union.val = 0;
+	
+	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+	clear();
 	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
@@ -251,7 +241,7 @@ void cntrl_c_handler_server(int dummy);
 	printf(BOLDRED"Message ID1: %ld\n"RESET, msqid1);
 	printf(BOLDRED"Message ID2: %ld\n"RESET, msqid2);
 	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
-	printf(BOLDRED"Key Semaphore: %d\n\n"RESET, keySemaphore);
+	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
 	printf(BOLDRED"Key Message: %d\n"RESET, keymsg);
 	
 	printf(BOLDRED"Width: %d\n"RESET, width);
@@ -263,8 +253,6 @@ void cntrl_c_handler_server(int dummy);
 /*------------------------------------------------------------------*/
 	
 /* ---- USER OUTPUT ---- */
-
-	clear();
 	
 	printf(BOLD ITALIC"*** Waiting for data from client... ***\n\n"RESET);
 

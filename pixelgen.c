@@ -424,17 +424,6 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-		semaphore1union.val = 1;
-	
-		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-	}
 	
 /* ---- GENERATE SEMAPHORE 2 ---- */
 	
@@ -449,25 +438,30 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-		semaphore2union.val = 0;
-	
-		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
-		{
-			perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-	}
 	
 /* ---- OPEN SEMAPHORE 1 ---- */
 	// CREATE SEMAPHORE1 KEY IS AVAILABLE
 	
+	semaphore1union.val = 1;
+	
+	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
 	
 /* ---- CLOSE SEMAPHORE 2 ---- */
 	// CREATE SEMPAHORE2 KEY IS NOT AVAILABLE
 	
+	semaphore2union.val = 0;
+	
+	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+	{
+		perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
 	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
