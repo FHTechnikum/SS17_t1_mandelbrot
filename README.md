@@ -4,7 +4,10 @@ Created by Sebastian Dichler, 2017
   
 The pixelgen program is generating the mandelbrot picture and writes the pixels into a local memory. This memory is moved into a global, shared memory.  
 The writepic program is reading the pixels from the shared memory and writes them into a ppm P3 picture.  
+
+The whole process is running in a while loop and zooms out of the standard zoom.  
   
+Debug messages appear read and time calculation messages appear in yellow background  
 Format input:
 <pre>
 ./writepic  

@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 	double pr, pi;
 	double newRe, oldRe, newIm, oldIm;
 	double zoom, moveX, moveY;
+	double currentzoom;
 	
 	key_t globalKey;
 	
@@ -416,9 +417,10 @@ int main(int argc, char *argv[])
 
 /* ---- NEEDED FOR ALGORITHM BUT ARE STATIC ----*/
 
-	zoom = 1/zoom;
+	
 	width_double = width;
 	height_double = height;
+	currentzoom = zoom;
 	
 /* ---- CTRL+C HANDLER ---- */
 	
@@ -450,8 +452,8 @@ int main(int argc, char *argv[])
 		{
 			for (x = 0; x < width; x++)
 			{
-				pr = (width_double/height_double) * (x - width / 2) / (0.5 * zoom * width) + moveX;
-				pi = (y - height / 2) / (0.5 * zoom * height) + moveY;
+				pr = (width_double/height_double) * (x - width / 2) / (0.5 * (1/currentzoom) * width) + moveX;
+				pi = (y - height / 2) / (0.5 * (1/currentzoom) * height) + moveY;
 				
 				newRe = newIm = oldRe = oldIm = 0;
 				
@@ -525,6 +527,24 @@ int main(int argc, char *argv[])
 			
 				k++;
 			}
+		}
+		
+		f++;
+
+		currentzoom = currentzoom + 0.05;
+		if (currentzoom > 1)
+		{
+			semaphore2buffer.sem_num = 1;
+			semaphore2buffer.sem_op = -1;
+			semaphore2buffer.sem_flg = IPC_NOWAIT;
+	
+			if (semop(semaphore, &semaphore2buffer, 1) == -1)
+			{
+				perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
+			}
+	
+			free(picture_Pointer_local);
+			exit(EXIT_SUCCESS);
 		}
 		
 		printf(BOLD"* Done generating Pixels!\n\n"RESET);
@@ -651,8 +671,6 @@ int main(int argc, char *argv[])
 		printf("\n"BLACK BACKYELLOW"Generated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
 		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
-		
-		f++;
 	
 	}
 	
