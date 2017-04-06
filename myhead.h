@@ -81,6 +81,21 @@ struct picture
 	int b;
 };
 
+struct messagetype
+{
+	int width;
+	int height;
+	int type;
+};
+
+
+
+struct message
+{
+	long int mtype;
+	struct messagetype msg;
+};
+
 union semun
 {
 	int val;
@@ -92,6 +107,7 @@ union semun
 typedef union semun SEMUN;
 typedef struct sembuf SEMBUF;
 typedef struct picture PICTURE;
+typedef struct message MESSAGE;
 
 void clear(void);
 void clearNoHelp(void);
@@ -99,6 +115,7 @@ void helpdesk_1(void);
 void helpdesk_2(void);
 int check_number(char *number);
 int clearOptarg(char *string, char *input);
+key_t getkey(void);
 
 void cntrl_c_handler_client(int dummy);
 void cntrl_c_handler_server(int dummy);

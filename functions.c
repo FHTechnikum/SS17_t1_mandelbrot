@@ -130,3 +130,17 @@ int clearOptarg(char *string, char *input)
 		return 0;
 	}
 }
+
+key_t getkey(void)
+{
+	key_t key = -1;
+	
+	key = ftok("/etc/hostname", 'b');
+	if (key == -1)
+	{
+		perror(BOLD"\nERROR: ftok: Can't generate Key"RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+	return key;
+}

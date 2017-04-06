@@ -44,38 +44,9 @@
  *          Rev.: 24, 03.04.2017 - Fix in Useroutput
  *          Rev.: 25, 03.04.2017 - Debug messages for while(1)
  *          Rev.: 26, 04.04.2017 - New semaphore handling (still buggy)
+ *          Rev.: 27, 06.04.2017 - Added Message structs and global key and removed global
+ *                                 variables
  *
- 
-MANDELBROT @ v1.0
-Created by Sebastian Dichler, 2017
-Use"-?" for more information.
-
-*** DEBUG MODE ACTIVE ***
-
-Semaphore ID1: 196608
-Semaphore ID2: 196608
-Key SharedMem: 1645281434
-Key Semaphore: 1645281434
-Size: 12
-
-width: 800
-height: 600
-iterations: 5000
-Type: 0
--moveX: -0.500000000000000 -moveY: 0.000000000000000 -zoom: 1.000000000000000
-
-*** GENERATING MANDELBROT ***
-
-
-* Generating Mandelbrot Pixels...
-* Done generating Pixels!
-
-Generated Mandelbrot values within 6.472219 secs
-
-
-* Generating Mandelbrot Pixels...
-Speicherzugriffsfehler
- 
  *
  *
  *
@@ -92,22 +63,12 @@ Speicherzugriffsfehler
 
 /* ---- GLOBAL VARIABLES ---- */
 
-key_t keySemaphore;
-key_t keySharedMem;
-key_t keymsg;
-
 SEMUN semaphore1union;
 SEMUN semaphore2union;
 SEMBUF semaphore1buffer;
 SEMBUF semaphore2buffer;
 
 PICTURE *picture_Pointer_local = NULL;
-
-int semaphore1 = 0;
-int semaphore2 = 0;
-int sharedmemid = 0;
-long int msqid1 = 0;
-long int msqid2 = 0;
 
 #if TIME
 struct timeval timer1, timer2;
@@ -131,6 +92,15 @@ int main(int argc, char *argv[])
 	double pr, pi;
 	double newRe, oldRe, newIm, oldIm;
 	double zoom, moveX, moveY;
+	
+	key_t globalKey;
+	
+	int semaphore1 = 0;
+	int semaphore2 = 0;
+	int sharedmemid = 0;
+	
+	MESSAGE messagetype;
+	long int typeMessage = 0;
 	
 	int brightnessr;
 	int brightnessg;
@@ -351,72 +321,16 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-/* ---- GENERATE KEYS FOR SEMAPHORE AND SHARED MEMORY AND MSG ---- */
+/* ---- GENERATE KEYS FOR SEMAPHORE, SHARED MEMORY AND MESSAGE ---- */
 	
-	keySemaphore = ftok("/etc/hostname", 'b');
-	if (keySemaphore == -1)
-	{
-		perror(BOLD"\nERROR: ftok: Can't generate Semaphore Key"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
+	globalKey = getkey();
 	
-	keySharedMem = ftok("/etc/hostname", 'b');
-	if (keySharedMem == -1)
-	{
-		perror(BOLD"\nERROR: ftok: Can't generate Shared-Memory Key"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
+/* ---- GENERATE SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
 	
-/* ---- SEND WIDTH AND HEIGHT TO WRITEPIC ---- */
-	
-	keymsg = ftok("/etc/hostname", 'b');
-	if (keymsg == -1)
-	{
-		perror(BOLD"\nERROR: ftok: Can't generate Message Key"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
-	msqid1 = msgget(keymsg, IPC_CREAT | 0666);
-	if (msqid1 >= 0)
-	{
-		if (msgsnd(msqid1, &width, sizeof(width), 0) == -1)
-		{
-			perror(BOLD"\nERROR: msgsnd: Can't send width"RESET);
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-	}
-	
-	msqid2 = msgget(keymsg, IPC_CREAT | 0666);
-	if (msqid2 >= 0)
-	{
-		if(msgsnd(msqid2, &height, sizeof(height), 0) == -1)
-		{
-			perror(BOLD"\nERROR: msgsnd: Can't send height"RESET);
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-	}
-	
-/* ---- GENERATE SHARED MEMORY ---- */
-	
-	sharedmemid = shmget(keySharedMem, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
-	if (sharedmemid == -1)
-	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- GENERATE SEMAPHORE 1 ---- */
-	
-	semaphore1 = semget(keySemaphore, 1, IPC_CREAT | 0666);
+	semaphore1 = semget(globalKey, 1, IPC_CREAT | 0666);
 	if (semaphore1 < 0)
 	{
-		semaphore1 = semget(keySemaphore, 1, 0);
+		semaphore1 = semget(globalKey, 1, 0);
 		if (semaphore1 < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
@@ -424,13 +338,24 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+	else
+	{
+		semaphore1union.val = 1;
 	
-/* ---- GENERATE SEMAPHORE 2 ---- */
+		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+	}
 	
-	semaphore2 = semget(keySemaphore, 1, IPC_CREAT | 0666);
+/* ---- GENERATE SEMAPHORE 2 | CLOSED | KEY IS NOT AVAILABLE ---- */
+	
+	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666);
 	if (semaphore2 < 0)
 	{
-		semaphore2 = semget(keySemaphore, 1, 0);
+		semaphore2 = semget(globalKey, 1, 0);
 		if (semaphore2 < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
@@ -438,41 +363,53 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-	
-/* ---- OPEN SEMAPHORE 1 ---- */
-	// CREATE SEMAPHORE1 KEY IS AVAILABLE
-	
-	semaphore1union.val = 1;
-	
-	if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+	else
 	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
+		semaphore2union.val = 0;
+	
+		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		{
+			perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+/* ---- GENERATE SHARED MEMORY ---- */
+	
+	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
+	if (sharedmemid == -1)
+	{
+		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory"RESET);
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
 	
-/* ---- CLOSE SEMAPHORE 2 ---- */
-	// CREATE SEMPAHORE2 KEY IS NOT AVAILABLE
+/* ---- MESSAGE SEND ---- */
 	
-	semaphore2union.val = 0;
+	messagetype.mtype = 0;
+	messagetype.msg.width = width;
+	messagetype.msg.height = height;
+	messagetype.msg.type = type;
 	
-	if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+	typeMessage = msgget(globalKey, IPC_CREAT | 0666);
+	if (typeMessage >= 0)
 	{
-		perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
+		if (msgsnd(typeMessage, &messagetype.msg, sizeof(messagetype.msg), 0) == -1)
+		{
+			perror(BOLD"\nERROR: msgsnd: Can't send message"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 #if DEBUG
 	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
 	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
-	printf(BOLDRED"Message ID1: %ld\n"RESET, msqid1);
-	printf(BOLDRED"Message ID2: %ld\n"RESET, msqid2);
-	printf(BOLDRED"Key SharedMem: %d\n"RESET, keySharedMem);
-	printf(BOLDRED"Key Semaphore: %d\n"RESET, keySemaphore);
-	printf(BOLDRED"Key Message: %d\n"RESET, keymsg);
-	printf(BOLDRED"Size: %d\n"RESET, sizeof(PICTURE));
+	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);;
+	printf(BOLDRED"Key: %d\n"RESET, globalKey);
+	printf(BOLDRED"Size for each picture: %dkByte\n"RESET, (sizeof(PICTURE)*height*width)/1000);
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
@@ -727,6 +664,23 @@ int main(int argc, char *argv[])
 
 void cntrl_c_handler_client(int dummy)
 {
+	key_t globalKey;
+	int semaphore2 = 0;
+	
+	globalKey = getkey();
+	
+	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666);
+	if (semaphore2 < 0)
+	{
+		semaphore2 = semget(globalKey, 1, 0);
+		if (semaphore2 < 0)
+		{
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
 	printf(BOLD"\nYou just typed CTRL+C\nClient is closing connection...\n"RESET);
 	
 /* ---- REQUESTING ACCESS TO SEMAPHORE 2 ---- */
