@@ -46,6 +46,7 @@
  *          Rev.: 26, 04.04.2017 - New semaphore handling (still buggy)
  *          Rev.: 27, 06.04.2017 - Added Message structs and global key and removed global
  *                                 variables
+ *          Rev.: 28, 06.04.2017 - Semaphore 2 is allways open?
  *
  *
  *
@@ -95,8 +96,7 @@ int main(int argc, char *argv[])
 	
 	key_t globalKey;
 	
-	int semaphore1 = 0;
-	int semaphore2 = 0;
+	int semaphore = 0;
 	int sharedmemid = 0;
 	
 	MESSAGE messagetype;
@@ -327,50 +327,36 @@ int main(int argc, char *argv[])
 	
 /* ---- GENERATE SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
 	
-	semaphore1 = semget(globalKey, 1, IPC_CREAT | 0666);
-	if (semaphore1 < 0)
+		semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
+	if (semaphore < 0)
 	{
-		semaphore1 = semget(globalKey, 1, 0);
-		if (semaphore1 < 0)
+		semaphore = semget(globalKey, 2, 0);
+		if (semaphore < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
-			free(picture_Pointer_local);	
 			exit(EXIT_FAILURE);
 		}
 	}
 	else
 	{
+	
+/* ---- SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
+	
 		semaphore1union.val = 1;
 	
-		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		if (semctl(semaphore, 0, SETVAL, semaphore1union) < 0)
 		{
 			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
-			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
-	}
-	
-/* ---- GENERATE SEMAPHORE 2 | CLOSED | KEY IS NOT AVAILABLE ---- */
-	
-	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666);
-	if (semaphore2 < 0)
-	{
-		semaphore2 = semget(globalKey, 1, 0);
-		if (semaphore2 < 0)
-		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-			free(picture_Pointer_local);
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
+		
+/* ---- SEMAPHORE 2 | CLOSED | KEY IS NOT AVAILABLE ---- */
+		
 		semaphore2union.val = 0;
 	
-		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		if (semctl(semaphore, 1, SETVAL, semaphore2union) < 0)
 		{
-			perror(BOLD"\nERROR: semctl: Can't cotnrol Semaphore 2"RESET);
-			free(picture_Pointer_local);
+			perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -404,8 +390,7 @@ int main(int argc, char *argv[])
 	}
 	
 #if DEBUG
-	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
-	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
+	printf(BOLDRED"Semaphore ID: %d\n"RESET, semaphore);
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);;
 	printf(BOLDRED"Key: %d\n"RESET, globalKey);
@@ -577,7 +562,7 @@ int main(int argc, char *argv[])
 		semaphore1buffer.sem_op = -1;
 		semaphore1buffer.sem_flg = 0;
 		
-		if (semop(semaphore1, &semaphore1buffer, 1) == -1)
+		if (semop(semaphore, &semaphore1buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't access Semaphore 1"RESET);
 			free(picture_Pointer_local);
@@ -617,7 +602,7 @@ int main(int argc, char *argv[])
 		semaphore2buffer.sem_op =  1;
 		semaphore2buffer.sem_flg = 0;
 		
-		if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+		if (semop(semaphore, &semaphore2buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't release access to Semaphore 2"RESET);
 			free(picture_Pointer_local);
@@ -665,15 +650,15 @@ int main(int argc, char *argv[])
 void cntrl_c_handler_client(int dummy)
 {
 	key_t globalKey;
-	int semaphore2 = 0;
+	int semaphore = 0;
 	
 	globalKey = getkey();
 	
-	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666);
-	if (semaphore2 < 0)
+	semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
+	if (semaphore < 0)
 	{
-		semaphore2 = semget(globalKey, 1, 0);
-		if (semaphore2 < 0)
+		semaphore = semget(globalKey, 2, 0);
+		if (semaphore < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
 			free(picture_Pointer_local);
@@ -689,7 +674,7 @@ void cntrl_c_handler_client(int dummy)
 	semaphore2buffer.sem_op = -1;
 	semaphore2buffer.sem_flg = IPC_NOWAIT;
 	
-	if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+	if (semop(semaphore, &semaphore2buffer, 1) == -1)
 	{
 		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
 	}

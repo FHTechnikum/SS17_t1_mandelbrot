@@ -16,6 +16,7 @@
  *          Rev.: 07, 04.04.2017 - New semaphore handling (still buggy)
  *          Rev.: 08, 06.04.2017 - Added Message structs and global key and removed global
  *                                 varibales
+ *          Rev.: 09, 06.04.2017 - Semaphore 2 is allways open?
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -55,8 +56,7 @@ void cntrl_c_handler_server(int dummy);
 	
 	MESSAGE messagetype;
 	long int typeMessage = 0;
-	int semaphore1 = 0;
-	int semaphore2 = 0;
+	int semaphore = 0;
 	int sharedmemid = 0;
 	
 	long int mtype = 0;
@@ -110,13 +110,13 @@ void cntrl_c_handler_server(int dummy);
 		exit(EXIT_FAILURE);
 	}
 	
-/* ---- GENERATE SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
+/* ---- GENERATE SEMAPHORE 1 AND 2 ---- */
 	
-	semaphore1 = semget(globalKey, 1, IPC_CREAT | 0666 | IPC_EXCL);
-	if (semaphore1 < 0)
+	semaphore = semget(globalKey, 2, IPC_CREAT | 0666 | IPC_EXCL);
+	if (semaphore < 0)
 	{
-		semaphore1 = semget(globalKey, 1, 0);
-		if (semaphore1 < 0)
+		semaphore = semget(globalKey, 2, 0);
+		if (semaphore < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
 			exit(EXIT_FAILURE);
@@ -124,32 +124,22 @@ void cntrl_c_handler_server(int dummy);
 	}
 	else
 	{
+	
+/* ---- SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
+	
 		semaphore1union.val = 1;
 	
-		if (semctl(semaphore1, 0, SETVAL, semaphore1union) < 0)
+		if (semctl(semaphore, 0, SETVAL, semaphore1union) < 0)
 		{
 			perror(BOLD"\nERROR: semctl: Can't control Semaphore 1"RESET);
 			exit(EXIT_FAILURE);
 		}
-	}
-	
-/* ---- GENERATE SEMAPHORE 2 | CLOSED | KEY IS NOT AVAILABLE ---- */
-	
-	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666 | IPC_EXCL);
-	if (semaphore2 < 0)
-	{
-		semaphore2 = semget(globalKey, 1, 0);
-		if (semaphore2 < 0)
-		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-			exit(EXIT_FAILURE);
-		}
-	}
-	else
-	{
+		
+/* ---- SEMAPHORE 2 | CLOSED | KEY IS NOT AVAILABLE ---- */
+		
 		semaphore2union.val = 0;
 	
-		if (semctl(semaphore2, 0, SETVAL, semaphore2union) < 0)
+		if (semctl(semaphore, 1, SETVAL, semaphore2union) < 0)
 		{
 			perror(BOLD"\nERROR: semctl: Can't control Semaphore 2"RESET);
 			exit(EXIT_FAILURE);
@@ -159,8 +149,7 @@ void cntrl_c_handler_server(int dummy);
 	clear();
 	
 #if DEBUG
-	printf(BOLDRED"Semaphore ID1: %d\n"RESET, semaphore1);
-	printf(BOLDRED"Semaphore ID2: %d\n"RESET, semaphore2);
+	printf(BOLDRED"Semaphore ID: %d\n"RESET, semaphore);
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);
 	printf(BOLDRED"Key: %d\n\n"RESET, globalKey);
@@ -214,7 +203,7 @@ void cntrl_c_handler_server(int dummy);
 		semaphore2buffer.sem_op = -1;
 		semaphore2buffer.sem_flg = 0;
 		
-		if (semop(semaphore2, &semaphore2buffer, 1) == -1)
+		if (semop(semaphore, &semaphore2buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 2"RESET);
 			exit(EXIT_FAILURE);
@@ -287,7 +276,7 @@ void cntrl_c_handler_server(int dummy);
 		semaphore1buffer.sem_op =  1;
 		semaphore1buffer.sem_flg = 0;
 		
-		if (semop(semaphore1, &semaphore1buffer, 1) == -1)
+		if (semop(semaphore, &semaphore1buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 1"RESET);
 			exit(EXIT_FAILURE);
@@ -327,8 +316,7 @@ void cntrl_c_handler_server(int dummy)
 {
 	key_t globalKey;
 	long int typeMessage = 0;
-	int semaphore1 = 0;
-	int semaphore2 = 0;
+	int semaphore = 0;
 	int sharedmemid = 0;
 	
 	globalKey = getkey();
@@ -349,40 +337,22 @@ void cntrl_c_handler_server(int dummy)
 		perror(BOLD"\nERROR: shmctl: Can't control Shared-Memory, continue..."RESET);
 	}
 	
-/* ---- CLOSING SEMAPHORE 1 ---- */
+/* ---- CLOSING SEMAPHORE ---- */
 	
-	semaphore1 = semget(globalKey, 1, IPC_CREAT | 0666);
-	if (semaphore1 < 0)
+	semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
+	if (semaphore < 0)
 	{
-		semaphore1 = semget(globalKey, 1, 0);
-		if (semaphore1 < 0)
+		semaphore = semget(globalKey, 2, 0);
+		if (semaphore < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
 			exit(EXIT_FAILURE);
 		}
 	}
 	
-	if (semctl(semaphore1, IPC_RMID, 0) == -1)
+	if (semctl(semaphore, IPC_RMID, 0) == -1)
 	{
 		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1, continue..."RESET);
-	}
-	
-/* ---- CLOSING SEMAPHORE 2 ---- */
-	
-	semaphore2 = semget(globalKey, 1, IPC_CREAT | 0666);
-	if (semaphore2 < 0)
-	{
-		semaphore2 = semget(globalKey, 1, 0);
-		if (semaphore2 < 0)
-		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
-			exit(EXIT_FAILURE);
-		}
-	}
-	
-	if (semctl(semaphore2, IPC_RMID, 0) == -1)
-	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 2, continue..."RESET);
 	}
 	
 /* ---- CLOSING MESSAGE ---- */
