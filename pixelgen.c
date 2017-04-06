@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 	
 /* ---- GENERATE SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
 	
-		semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
+	semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
 	if (semaphore < 0)
 	{
 		semaphore = semget(globalKey, 2, 0);
@@ -586,6 +586,8 @@ int main(int argc, char *argv[])
 			(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
 		}
 		
+		free(picture_Pointer_local);
+		
 #if DEBUG
 		printf(BOLDRED"Filled Shared-Memory with values\n"RESET);
 #endif
@@ -598,7 +600,7 @@ int main(int argc, char *argv[])
 		printf(BOLDRED"Release access to Semaphore 2\n"RESET);
 #endif
 		// POST SEMAPHORE2 
-		semaphore2buffer.sem_num = 0;
+		semaphore2buffer.sem_num = 1;
 		semaphore2buffer.sem_op =  1;
 		semaphore2buffer.sem_flg = 0;
 		

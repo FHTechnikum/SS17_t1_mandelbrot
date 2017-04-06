@@ -199,7 +199,7 @@ void cntrl_c_handler_server(int dummy);
 		printf(BOLDRED"Requesting access to Semaphore 2\n"RESET);
 #endif
 		// PEND/WAIT ON SEMAPHORE2
-		semaphore2buffer.sem_num = 0;
+		semaphore2buffer.sem_num = 1;
 		semaphore2buffer.sem_op = -1;
 		semaphore2buffer.sem_flg = 0;
 		
