@@ -22,6 +22,8 @@
  *                                 sem_num 0 for first and 1 for second semaphore
  *          Rev.: 11, 06.04.2017 - Communication between both programs is now working in a loop 1
  *          Rev.: 12, 06.04.2017 - Reduced global varibales, write speed in MB/s next to time needed
+ *          Rev.: 13, 06.04.2017 - Removed helpdesk at loop beginning
+ *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -181,13 +183,6 @@ void cntrl_c_handler_server(int dummy);
 	
 	while(1)
 	{
-	
-/* ---- PRINT HELPDESK ONLY AFTER SECOND RUN ---- */
-
-		if (k > 0)
-		{
-			helpdesk_1();
-		}
 		
 /* ---- ATTACH SHARED MEMORY ---- */
 		

@@ -52,6 +52,9 @@
  *                                 sem_num 0 for first and 1 for second semaphore
  *          Rev.: 30, 06.04.2017 - Communication between both programs is now working in a loop 1
  *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed in MB/s next to time needed
+ *          Rev.: 32, 06.04.2017 - Removed helpdesk at loop beginning
+ *          Rev.: 33, 06.04.2017 - The CNTRL+C handler is working but printing error messages
+ *          Rev.: 34, 06.04.2017 - Breaks out of while loop if zoom is over 1
  *
  *
  * \information Algorithm with information of
@@ -430,12 +433,23 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
-	
-/* ---- PRINT HELPDESK ONLY AFTER SECOND RUN ---- */
 		
-		if (f > 0)
+/* ---- CHECK IF CURRENTZOOM IS ABOVE 1 ---- */
+		
+		if (currentzoom > 1)
 		{
-			helpdesk_1();
+			printf(BOLD"Zoomout factor is over 1, break up...\n"RESET);
+			semaphore2buffer.sem_num = 1;
+			semaphore2buffer.sem_op = -1;
+			semaphore2buffer.sem_flg = IPC_NOWAIT;
+	
+			if (semop(semaphore, &semaphore2buffer, 1) == -1)
+			{
+				perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
+			}
+	
+			free(picture_Pointer_local);
+			exit(EXIT_SUCCESS);
 		}
 		
 /* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
@@ -531,21 +545,7 @@ int main(int argc, char *argv[])
 		
 		f++;
 
-		currentzoom = currentzoom + 0.05;
-		if (currentzoom > 1)
-		{
-			semaphore2buffer.sem_num = 1;
-			semaphore2buffer.sem_op = -1;
-			semaphore2buffer.sem_flg = IPC_NOWAIT;
-	
-			if (semop(semaphore, &semaphore2buffer, 1) == -1)
-			{
-				perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
-			}
-	
-			free(picture_Pointer_local);
-			exit(EXIT_SUCCESS);
-		}
+		currentzoom = currentzoom + 0.03;
 		
 		printf(BOLD"* Done generating Pixels!\n\n"RESET);
 		printf(BOLD"Generated Pixels for "ITALIC"\"out-%.03d.ppm\"\n"RESET, f);
