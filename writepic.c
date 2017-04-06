@@ -17,6 +17,10 @@
  *          Rev.: 08, 06.04.2017 - Added Message structs and global key and removed global
  *                                 varibales
  *          Rev.: 09, 06.04.2017 - Semaphore 2 is allways open?
+ *          Rev.: 10, 06.04.2017 - Programms are now working with semaphores, using
+ *                                 semget(key,2,...) and setting each semaphores values with
+ *                                 sem_num 0 for first and 1 for second semaphore
+ *          Rev.: 11, 06.04.2017 - Communication between both programs is now working in a loop 1
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -255,7 +259,8 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 		
-		printf(BOLD"* Done writing file!\n"RESET);
+		printf(BOLD"* Done writing file!\n\n"RESET);
+		printf(BOLD"Generated Picture "ITALIC"\"out-%.03d.ppm\"\n"RESET, k);
 		
 #if TIME
 		gettimeofday(&timer2, NULL);

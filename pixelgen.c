@@ -47,6 +47,10 @@
  *          Rev.: 27, 06.04.2017 - Added Message structs and global key and removed global
  *                                 variables
  *          Rev.: 28, 06.04.2017 - Semaphore 2 is allways open?
+ *          Rev.: 29, 06.04.2017 - Programms are now working with semaphores, using
+ *                                 semget(key,2,...) and setting each semaphores values with
+ *                                 sem_num 0 for first and 1 for second semaphore
+ *          Rev.: 30, 06.04.2017 - Communication between both programs is now working in a loop 1
  *
  *
  *
@@ -118,7 +122,7 @@ int main(int argc, char *argv[])
 	
 	PICTURE *picture_Pointer_global = NULL;
 	
-	int i = 0, k = 0;
+	int i = 0, k = 0, f = 0;
 	int error = 0;
 	int opt;
 	int type = 0;
@@ -411,6 +415,12 @@ int main(int argc, char *argv[])
 	
 	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n\n"RESET);
 
+/* ---- NEEDED FOR ALGORITHM BUT ARE STATIC ----*/
+
+	zoom = 1/zoom;
+	width_double = width;
+	height_double = height;
+	
 /* ---- CTRL+C HANDLER ---- */
 	
 	signal(SIGINT, cntrl_c_handler_client);
@@ -427,10 +437,8 @@ int main(int argc, char *argv[])
 /* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
 		
 		printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
-	
-		zoom = 1/zoom;
-		width_double = width;
-		height_double = height;
+		
+		k = 0;
 		
 		for (y = 0; y < height; y++)
 		{
@@ -513,7 +521,8 @@ int main(int argc, char *argv[])
 			}
 		}
 		
-		printf(BOLD"* Done generating Pixels!\n"RESET);
+		printf(BOLD"* Done generating Pixels!\n\n"RESET);
+		printf(BOLD"Generated Pixels for "ITALIC"\"out-%.03d.ppm\"\n"RESET, f);
 		
 /* ---- GENERATE TIME STAMP ---- */
 		
@@ -586,8 +595,6 @@ int main(int argc, char *argv[])
 			(picture_Pointer_global+i)->b = (picture_Pointer_local+i)->b;
 		}
 		
-		free(picture_Pointer_local);
-		
 #if DEBUG
 		printf(BOLDRED"Filled Shared-Memory with values\n"RESET);
 #endif
@@ -638,6 +645,8 @@ int main(int argc, char *argv[])
 		printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"", timediff);
 		printf("\n\n");
 #endif
+		
+		f++;
 	
 	}
 	
