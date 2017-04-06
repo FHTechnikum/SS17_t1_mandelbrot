@@ -51,15 +51,12 @@
  *                                 semget(key,2,...) and setting each semaphores values with
  *                                 sem_num 0 for first and 1 for second semaphore
  *          Rev.: 30, 06.04.2017 - Communication between both programs is now working in a loop 1
- *
- *
+ *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed in MB/s next to time needed
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *              CNTRL+C handler with help of Helmut Resch
- *
- *              Problems with REQUEST ACCESS TO SEMAPHORE 1 at 608
  *
  *
  */
@@ -138,6 +135,8 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 	
 	clear();
+	
+/* ---- PARAMETER HANDLING ---- */
 	
 	while ((opt = getopt (argc, argv, "w:h:i:t:?")) != -1)
 	{
@@ -397,14 +396,14 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Semaphore ID: %d\n"RESET, semaphore);
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);;
-	printf(BOLDRED"Key: %d\n"RESET, globalKey);
+	printf(BOLDRED"Key: %d\n\n"RESET, globalKey);
 	printf(BOLDRED"Size for each picture: %dkByte\n"RESET, (sizeof(PICTURE)*height*width)/1000);
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
 	printf(BOLDRED"iterations: %d\n"RESET, iterations);
 	printf(BOLDRED"Type: %d\n", type);
-	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n"RESET, moveX, moveY, zoom);
+	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n\n"RESET, moveX, moveY, zoom);
 #endif
 	
 /*------------------------------------------------------------------*/
@@ -429,12 +428,19 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
+	
+/* ---- PRINT HELPDESK ONLY AFTER SECOND RUN ---- */
+		
+		if (f > 0)
+		{
+			helpdesk_1();
+		}
+		
+/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
 		
 #if TIME
 		gettimeofday(&timer1, NULL);
 #endif
-		
-/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
 		
 		printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
 		
@@ -642,8 +648,8 @@ int main(int argc, char *argv[])
 #if TIME
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 		
-		printf(BLACK BACKYELLOW"\nGenerated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"", timediff);
-		printf("\n\n");
+		printf("\n"BLACK BACKYELLOW"Generated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
+		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
 		
 		f++;
@@ -681,7 +687,7 @@ void cntrl_c_handler_client(int dummy)
 	
 /* ---- REQUESTING ACCESS TO SEMAPHORE 2 ---- */
 	
-	semaphore2buffer.sem_num = 0;
+	semaphore2buffer.sem_num = 1;
 	semaphore2buffer.sem_op = -1;
 	semaphore2buffer.sem_flg = IPC_NOWAIT;
 	

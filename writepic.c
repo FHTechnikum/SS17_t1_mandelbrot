@@ -21,6 +21,7 @@
  *                                 semget(key,2,...) and setting each semaphores values with
  *                                 sem_num 0 for first and 1 for second semaphore
  *          Rev.: 11, 06.04.2017 - Communication between both programs is now working in a loop 1
+ *          Rev.: 12, 06.04.2017 - Reduced global varibales, write speed in MB/s next to time needed
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -157,6 +158,7 @@ void cntrl_c_handler_server(int dummy);
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);
 	printf(BOLDRED"Key: %d\n\n"RESET, globalKey);
+	printf(BOLDRED"Size for each picture: %dkByte\n"RESET, (sizeof(PICTURE)*height*width)/1000);
 	
 	printf(BOLDRED"Width: %d\n"RESET, width);
 	printf(BOLDRED"Height: %d\n"RESET, height);
@@ -179,6 +181,13 @@ void cntrl_c_handler_server(int dummy);
 	
 	while(1)
 	{
+	
+/* ---- PRINT HELPDESK ONLY AFTER SECOND RUN ---- */
+
+		if (k > 0)
+		{
+			helpdesk_1();
+		}
 		
 /* ---- ATTACH SHARED MEMORY ---- */
 		
@@ -267,8 +276,8 @@ void cntrl_c_handler_server(int dummy);
 		
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 		
-		printf(BLACK BACKYELLOW"\nWrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"", timediff);
-		printf("\n\n");
+		printf("\n"BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
+		printf(BLACK BACKYELLOW"Write Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
 		
 /* ---- RELEASE ACCESS TO SEMAPHORE 1 ---- */

@@ -10,6 +10,7 @@
  *          Rev.: 03, 25.03.2017 - Added some ANSI formats for output
  *          Rev.: 04, 28.03.2017 - Added debug_pixel define
  *          Rev.: 05, 28.03.2017 - Fixed ifndef failure
+ *          Rev.: 06, 06.03.2017 - Added message structs
  *
  * \information A bug with ifndef and define of _myhead_, can't find it
  *

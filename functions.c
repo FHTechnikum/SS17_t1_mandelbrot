@@ -52,10 +52,11 @@ void helpdesk_2(void)
 	printf("\n");
 	printf(BOLD"MANDELBROT @ v1.0\n"RESET);
 	printf(BOLD"Created by Sebastian Dichler, 2017\n\n"RESET);
-	printf(BOLD"This is a programm, communicating between 2 programms\n"RESET);
-	printf(BOLD"RUN writepic before pixelgen!!!\n"RESET);
-	printf(BOLD"A simple programm (pixelgen) calculating a mandelbrot and put pixels\n"RESET);
-	printf(BOLD"into a shared memory, and writepic is writing them into a ppm file\n\n"RESET);
+	
+	printf("The pixelgen program is generating the\n"
+			"mandelbrot picture and writes the pixels into a local memory.\n"
+			"This memory is moved into a global, shared memory.\n\n");
+			
 	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);
 	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");
 	printf("- "BOLD"[-h]\t"RESET" to change Image height\n");

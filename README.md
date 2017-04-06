@@ -2,6 +2,9 @@
 MANDELBROT GENERATOR @ v1.0  
 Created by Sebastian Dichler, 2017  
   
+The pixelgen program is generating the mandelbrot picture and writes the pixels into a local memory. This memory is moved into a global, shared memory.  
+The writepic program is reading the pixels from the shared memory and writes them into a ppm P3 picture.  
+  
 Format input:
 <pre>
 ./writepic  
