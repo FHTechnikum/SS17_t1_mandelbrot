@@ -24,6 +24,7 @@
  *          Rev.: 12, 06.04.2017 - Reduced global varibales, write speed in MB/s next to time needed
  *          Rev.: 13, 06.04.2017 - Removed helpdesk at loop beginning
  *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
+ *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -183,6 +184,13 @@ void cntrl_c_handler_server(int dummy);
 	
 	while(1)
 	{
+		if (k > 0)
+		{
+			printf(ITALIC"_________________________________________\n\n"RESET);
+			printf(BACKGREEN BLACK"New Image:"RESET"\n\n");
+		}
+		
+		printf("Waiting for data...\n\n");
 		
 /* ---- ATTACH SHARED MEMORY ---- */
 		
@@ -225,7 +233,7 @@ void cntrl_c_handler_server(int dummy);
 		gettimeofday(&timer1, NULL);
 #endif
 		
-		printf(BOLD"* Writing file...\n"RESET);
+		printf("* Writing file...\n");
 		
 /* ---- OPEN OUTPUT-FILE ---- */
 		
@@ -263,8 +271,8 @@ void cntrl_c_handler_server(int dummy);
 			exit(EXIT_FAILURE);
 		}
 		
-		printf(BOLD"* Done writing file!\n\n"RESET);
-		printf(BOLD"Generated Picture "ITALIC"\"out-%.03d.ppm\"\n"RESET, k);
+		printf("* Done writing file!\n\n");
+		printf("Generated Picture "BOLD ITALIC"\"out-%.03d.ppm\"\n"RESET, k);
 		
 #if TIME
 		gettimeofday(&timer2, NULL);
@@ -330,7 +338,7 @@ void cntrl_c_handler_server(int dummy)
 	
 	globalKey = getkey();
 	
-	printf(BOLD"\nYou just typed CTRL+C\nServer is closing everything...\n"RESET);
+	printf(BOLD"\nYou just typed CTRL+C\nServer is closing everything...\n\n"RESET);
 	
 /* ---- CLOSING SHARED MEMORY ---- */
 	
@@ -377,7 +385,7 @@ void cntrl_c_handler_server(int dummy)
 		perror(BOLD"\nERROR: msgctl: Can't close Message, continue..."RESET);
 	}
 	
-	printf(BOLD"If any error appeared check it manually with ipcs and remove them with ipcrm\n"RESET);
+	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n");
 	
 	exit(EXIT_SUCCESS);
 }

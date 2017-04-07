@@ -55,6 +55,8 @@
  *          Rev.: 32, 06.04.2017 - Removed helpdesk at loop beginning
  *          Rev.: 33, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *          Rev.: 34, 06.04.2017 - Breaks out of while loop if zoom is over 1
+ *          Rev.: 35, 07.04.2017 - Added variable zoom out factor for lower zoom in zoomfactor < 0.3
+ *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user output
  *
  *
  * \information Algorithm with information of
@@ -433,6 +435,11 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
+		if (f > 0)
+		{
+			printf(ITALIC"_________________________________________\n\n"RESET);
+			printf(BACKGREEN BLACK"New Image:"RESET"\n\n");
+		}
 		
 /* ---- CHECK IF CURRENTZOOM IS ABOVE 1 ---- */
 		
@@ -458,7 +465,7 @@ int main(int argc, char *argv[])
 		gettimeofday(&timer1, NULL);
 #endif
 		
-		printf(BOLD"\n* Generating Mandelbrot Pixels...\n"RESET);
+		printf("* Generating Mandelbrot Pixels...\n");
 		
 		k = 0;
 		
@@ -543,12 +550,38 @@ int main(int argc, char *argv[])
 			}
 		}
 		
-		f++;
-
-		currentzoom = currentzoom + 0.03;
+		if (currentzoom < 0.00005)
+		{
+			currentzoom = currentzoom + 0.000005;
+		}
+		else if (currentzoom < 0.0005)
+		{
+			currentzoom = currentzoom + 0.00005;
+		}
+		else if (currentzoom < 0.005)
+		{
+			currentzoom = currentzoom + 0.0005;
+		}
+		else if (currentzoom < 0.05)
+		{
+			currentzoom = currentzoom + 0.005;
+		}
+		else if (currentzoom < 0.5)
+		{
+			currentzoom = currentzoom + 0.05;
+		}
+		else
+		{
+			currentzoom = currentzoom + 0.5;
+		}
 		
-		printf(BOLD"* Done generating Pixels!\n\n"RESET);
-		printf(BOLD"Generated Pixels for "ITALIC"\"out-%.03d.ppm\"\n"RESET, f);
+		printf("* Done generating Pixels!\n\n");
+		printf("Generated Pixels for "BOLD ITALIC"\"out-%.03d.ppm\"\n\n"RESET, f);
+		
+		f++;
+		
+		printf(ITALIC"Values:\n"RESET);
+		printf("-Zoom: %.07f -OffsetX: %f -OffsetY: %f\n\n", currentzoom, moveX, moveY);
 		
 /* ---- GENERATE TIME STAMP ---- */
 		
@@ -668,7 +701,7 @@ int main(int argc, char *argv[])
 #if TIME
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 		
-		printf("\n"BLACK BACKYELLOW"Generated Mandelbrot values within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
+		printf("\n"BLACK BACKYELLOW"Generated pixels within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
 		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
 	
@@ -713,6 +746,8 @@ void cntrl_c_handler_client(int dummy)
 	{
 		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
 	}
+	
+	printf("Telling server that client closed connection...\n");
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);

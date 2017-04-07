@@ -56,6 +56,9 @@ void helpdesk_2(void)
 	printf("The pixelgen program is generating the\n"
 			"mandelbrot picture and writes the pixels into a local memory.\n"
 			"This memory is moved into a global, shared memory.\n\n");
+	printf("The writepic program is reading the pixels from the shared memory\n"
+			"and writes them into a ppm P3 picture.\n\n");
+	printf("The whole process is running in a while loop and zooms out of the standard zoom.\n\n");
 			
 	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);
 	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");
