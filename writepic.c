@@ -25,6 +25,7 @@
  *          Rev.: 13, 06.04.2017 - Removed helpdesk at loop beginning
  *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
+ *          Rev.: 16, 08.04.2017 - Better user output
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -237,7 +238,7 @@ void cntrl_c_handler_server(int dummy);
 		
 /* ---- OPEN OUTPUT-FILE ---- */
 		
-		sprintf(filename, "out-%.03d.ppm", k);
+		sprintf(filename, "picture-%.03d.ppm", k);
 		if (strlen(filename) >= STRINGLENGTH)
 		{
 			perror(BOLD"\nERROR: output-filename is too long"RESET);
@@ -385,7 +386,7 @@ void cntrl_c_handler_server(int dummy)
 		perror(BOLD"\nERROR: msgctl: Can't close Message, continue..."RESET);
 	}
 	
-	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n");
+	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n\n");
 	
 	exit(EXIT_SUCCESS);
 }

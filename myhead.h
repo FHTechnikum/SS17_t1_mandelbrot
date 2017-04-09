@@ -116,6 +116,7 @@ void helpdesk_1(void);
 void helpdesk_2(void);
 int check_number(char *number);
 int clearOptarg(char *string, char *input);
+double getnewzoom(double zoom);
 key_t getkey(void);
 
 void cntrl_c_handler_client(int dummy);

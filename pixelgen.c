@@ -57,6 +57,7 @@
  *          Rev.: 34, 06.04.2017 - Breaks out of while loop if zoom is over 1
  *          Rev.: 35, 07.04.2017 - Added variable zoom out factor for lower zoom in zoomfactor < 0.3
  *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user output
+ *          Rev.: 37, 08.04.2017 - Added the getnewzoom function
  *
  *
  * \information Algorithm with information of
@@ -443,7 +444,7 @@ int main(int argc, char *argv[])
 		
 /* ---- CHECK IF CURRENTZOOM IS ABOVE 1 ---- */
 		
-		if (currentzoom > 1)
+		if (currentzoom >= 1)
 		{
 			printf(BOLD"Zoomout factor is over 1, break up...\n"RESET);
 			semaphore2buffer.sem_num = 1;
@@ -550,30 +551,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		
-		if (currentzoom < 0.00005)
-		{
-			currentzoom = currentzoom + 0.000005;
-		}
-		else if (currentzoom < 0.0005)
-		{
-			currentzoom = currentzoom + 0.00005;
-		}
-		else if (currentzoom < 0.005)
-		{
-			currentzoom = currentzoom + 0.0005;
-		}
-		else if (currentzoom < 0.05)
-		{
-			currentzoom = currentzoom + 0.005;
-		}
-		else if (currentzoom < 0.5)
-		{
-			currentzoom = currentzoom + 0.05;
-		}
-		else
-		{
-			currentzoom = currentzoom + 0.5;
-		}
+		currentzoom = getnewzoom(currentzoom);
 		
 		printf("* Done generating Pixels!\n\n");
 		printf("Generated Pixels for "BOLD ITALIC"\"out-%.03d.ppm\"\n\n"RESET, f);
