@@ -58,12 +58,15 @@
  *          Rev.: 35, 07.04.2017 - Added variable zoom out factor for lower zoom in zoomfactor < 0.3
  *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user output
  *          Rev.: 37, 08.04.2017 - Added the getnewzoom function
+ *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *              CNTRL+C handler with help of Helmut Resch
- *
+ *              Will change color algorithm
+ *				Tried to remove global variables requested for the signal handler, but
+ *              not working with normal POSIX
  *
  */
 
@@ -71,44 +74,40 @@
 
 /* ---- GLOBAL VARIABLES ---- */
 
-SEMUN semaphore1union;
-SEMUN semaphore2union;
-SEMBUF semaphore1buffer;
-SEMBUF semaphore2buffer;
-
 PICTURE *picture_Pointer_local = NULL;
-
-#if TIME
-struct timeval timer1, timer2;
-#endif
-
-/* ---- FUNCTION DECLARATION ---- */
-
-void cntrl_c_handler_client(int dummy);
 
 /* ---- MAIN FUNCTION ---- */
 
 int main(int argc, char *argv[])
 {
-	int width = 800;
-	int height = 600;
-	int iterations = 5000;
-	double width_double;
-	double height_double;
-	int x, y;
 	
-	double pr, pi;
-	double newRe, oldRe, newIm, oldIm;
-	double zoom, moveX, moveY;
-	double currentzoom;
+#if TIME
+	struct timeval timer1, timer2;
+#endif
 	
 	key_t globalKey;
 	
+	SEMUN semaphore1union;
+	SEMUN semaphore2union;
+	SEMBUF semaphore1buffer;
+	SEMBUF semaphore2buffer;
 	int semaphore = 0;
 	int sharedmemid = 0;
 	
 	MESSAGE messagetype;
 	long int typeMessage = 0;
+
+	int width = 800;
+	int height = 600;
+	int iterations = 5000;
+	double width_double;
+	double height_double;
+	
+	int x, y;
+	double pr, pi;
+	double newRe, oldRe, newIm, oldIm;
+	double zoom, moveX, moveY;
+	double currentzoom;
 	
 	int brightnessr;
 	int brightnessg;
@@ -128,14 +127,14 @@ int main(int argc, char *argv[])
 	
 	int i = 0, k = 0, f = 0;
 	int error = 0;
+	int errorcount = 0;
 	int opt;
 	int type = 0;
+	char *pEnd;
 	
 #if TIME
 	double timediff;
 #endif
-	
-	char *pEnd;
 	
 /*------------------------------------------------------------------*/
 /* I N I T                                                          */
@@ -151,28 +150,64 @@ int main(int argc, char *argv[])
 		{
 			case 'w':
 				error = clearOptarg(widthString, optarg);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
 				error = check_number(widthString);
+				if (error == 1)
+				{
+					errorcount++;
+				}
 				
 				width = strtod(widthString, &pEnd);
 			break;
 			
 			case 'h':
 				error = clearOptarg(heightString, optarg);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
 				error = check_number(heightString);
+				if (error == 1)
+				{
+					errorcount++;
+				}
 				
 				height = strtod(heightString, &pEnd);
 			break;
 			
 			case 'i':
 				error = clearOptarg(iterationsString, optarg);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
 				error = check_number(iterationsString);
+				if (error == 1)
+				{
+					errorcount++;
+				}
 				
 				iterations = strtod(iterationsString, &pEnd);
 			break;
 			
 			case 't':
 				error = clearOptarg(typeString, optarg);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
 				error = check_number(typeString);
+				if (error == 1)
+				{
+					errorcount++;
+				}
 				
 				type = strtod(typeString, &pEnd);
 			break;
@@ -305,7 +340,7 @@ int main(int argc, char *argv[])
 	
 /* ---- IF ONE PARAMETER INPUT FAILED OR IS NOT CORRECT ---- */
 	
-	if (error == 1)
+	if (errorcount != 0)
 	{
 		perror(BOLD"\nERROR: One or more Parameters are not correct"RESET);
 		exit(EXIT_FAILURE);
@@ -321,21 +356,11 @@ int main(int argc, char *argv[])
 /* I N I T                                                          */
 /*------------------------------------------------------------------*/
 	
-/* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
-	
-	picture_Pointer_local = (PICTURE *)malloc(width * height * sizeof(PICTURE));
-	if (picture_Pointer_local == NULL)
-	{
-		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory"RESET);
-		free(picture_Pointer_local);
-		exit(EXIT_FAILURE);
-	}
-	
 /* ---- GENERATE KEYS FOR SEMAPHORE, SHARED MEMORY AND MESSAGE ---- */
 	
 	globalKey = getkey();
 	
-/* ---- GENERATE SEMAPHORE 1 | OPEN | KEY IS AVAILABLE ---- */
+/* ---- GENERATE SEMAPHORE 1 AND 2 ---- */
 	
 	semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
 	if (semaphore < 0)
@@ -374,9 +399,18 @@ int main(int argc, char *argv[])
 /* ---- GENERATE SHARED MEMORY ---- */
 	
 	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
-	if (sharedmemid == -1)
+	if (sharedmemid == -1 || errno == ENOENT)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory"RESET);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
+	
+	picture_Pointer_local = (PICTURE *)malloc(width * height * sizeof(PICTURE));
+	if (picture_Pointer_local == NULL)
+	{
+		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory"RESET);
 		free(picture_Pointer_local);
 		exit(EXIT_FAILURE);
 	}
@@ -416,13 +450,12 @@ int main(int argc, char *argv[])
 /*------------------------------------------------------------------*/
 /* P R O G R A M M   S T A R T                                      */
 /*------------------------------------------------------------------*/
-
+	
 /* ---- USER OUTPUT ---- */
 	
 	printf(BOLD ITALIC"\n*** GENERATING MANDELBROT ***\n\n"RESET);
-
+	
 /* ---- NEEDED FOR ALGORITHM BUT ARE STATIC ----*/
-
 	
 	width_double = width;
 	height_double = height;
@@ -450,17 +483,17 @@ int main(int argc, char *argv[])
 			semaphore2buffer.sem_num = 1;
 			semaphore2buffer.sem_op = -1;
 			semaphore2buffer.sem_flg = IPC_NOWAIT;
-	
+			
 			if (semop(semaphore, &semaphore2buffer, 1) == -1)
 			{
 				perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
 			}
-	
+			
 			free(picture_Pointer_local);
 			exit(EXIT_SUCCESS);
 		}
 		
-/* ---- ALGORITHM CODE FOR COLOR (source in description) ---- */
+/* ---- ALGORITHM CODE FOR COLOR (source in description (algorithm changed!)) ---- */
 		
 #if TIME
 		gettimeofday(&timer1, NULL);
@@ -546,7 +579,7 @@ int main(int argc, char *argv[])
 						(picture_Pointer_local+k)->b = 255;
 					}
 				}
-			
+				
 				k++;
 			}
 		}
@@ -554,14 +587,12 @@ int main(int argc, char *argv[])
 		currentzoom = getnewzoom(currentzoom);
 		
 		printf("* Done generating Pixels!\n\n");
-		printf("Generated Pixels for "BOLD ITALIC"\"out-%.03d.ppm\"\n\n"RESET, f);
+		printf("Generated Pixels for "BOLD ITALIC"\"picture-%.03d.ppm\"\n\n"RESET, f);
 		
 		f++;
 		
 		printf(ITALIC"Values:\n"RESET);
 		printf("-Zoom: %.07f -OffsetX: %f -OffsetY: %f\n\n", currentzoom, moveX, moveY);
-		
-/* ---- GENERATE TIME STAMP ---- */
 		
 #if TIME
 		gettimeofday(&timer2, NULL);
@@ -603,7 +634,7 @@ int main(int argc, char *argv[])
 #if DEBUG
 		printf(BOLDRED"Requesting access to Semaphore 1\n"RESET);
 #endif
-		// PEND ON SEMAPHORE1
+		
 		semaphore1buffer.sem_num = 0;
 		semaphore1buffer.sem_op = -1;
 		semaphore1buffer.sem_flg = 0;
@@ -636,14 +667,12 @@ int main(int argc, char *argv[])
 		printf(BOLDRED"Filled Shared-Memory with values\n"RESET);
 #endif
 		
-		sleep(1);
-		
 /* ---- RELEASE ACCESS TO SEMAPHORE 2 ---- */
 		
 #if DEBUG
 		printf(BOLDRED"Release access to Semaphore 2\n"RESET);
 #endif
-		// POST SEMAPHORE2 
+		
 		semaphore2buffer.sem_num = 1;
 		semaphore2buffer.sem_op =  1;
 		semaphore2buffer.sem_flg = 0;
@@ -682,7 +711,7 @@ int main(int argc, char *argv[])
 		printf("\n"BLACK BACKYELLOW"Generated pixels within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
 		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
-	
+		
 	}
 	
 	free(picture_Pointer_local);
@@ -696,6 +725,8 @@ int main(int argc, char *argv[])
 void cntrl_c_handler_client(int dummy)
 {
 	key_t globalKey;
+	
+	SEMBUF semaphore2buffer;
 	int semaphore = 0;
 	
 	globalKey = getkey();
@@ -725,7 +756,7 @@ void cntrl_c_handler_client(int dummy)
 		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
 	}
 	
-	printf("Telling server that client closed connection...\n");
+	printf(BOLD"Telling server that client closed connection...\n\n"RESET);
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);

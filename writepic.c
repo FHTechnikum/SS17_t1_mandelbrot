@@ -26,9 +26,12 @@
  *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
  *          Rev.: 16, 08.04.2017 - Better user output
+ *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
+ *              Tried to remove global variables requested for the signal handler, but
+ *              not working with normal POSIX
  *
  *
  */
@@ -37,38 +40,35 @@
 
 /* ---- GLOBAL VARIABLES ---- */
 
-SEMUN semaphore1union;
-SEMUN semaphore2union;
-SEMBUF semaphore1buffer;
-SEMBUF semaphore2buffer;
-
 int width;
 int height;
 
-#if TIME 
-struct timeval timer1, timer2;
-#endif
-
-/* ---- FUNCTION DECLARATION ---- */
-
-void cntrl_c_handler_server(int dummy);
-
 /* ---- MAIN FUNCTION ---- */
- 
- int main(int argc, char *argv[])
- {
+
+int main(int argc, char *argv[])
+{
+	
+#if TIME 
+	struct timeval timer1, timer2;
+#endif
+	
+	key_t globalKey;
+	
+	SEMUN semaphore1union;
+	SEMUN semaphore2union;
+	SEMBUF semaphore1buffer;
+	SEMBUF semaphore2buffer;
+	int semaphore = 0;
+	int sharedmemid = 0;
+	
+	MESSAGE messagetype;
+	long int typeMessage = 0;
+	long int mtype = 0;
+
 	int type;
 	
 	FILE* pFout = NULL;
 	
-	key_t globalKey;
-	
-	MESSAGE messagetype;
-	long int typeMessage = 0;
-	int semaphore = 0;
-	int sharedmemid = 0;
-	
-	long int mtype = 0;
  	PICTURE *picture_Pointer_global = NULL;
 	
 	int k = 0;
@@ -113,7 +113,7 @@ void cntrl_c_handler_server(int dummy);
 /* ---- GENERATE SHARED MEMORY ---- */
 	
 	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
-	if (sharedmemid == -1)
+	if (sharedmemid == -1 || errno == ENOENT)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
 		exit(EXIT_FAILURE);
@@ -215,7 +215,7 @@ void cntrl_c_handler_server(int dummy);
 #if DEBUG
 		printf(BOLDRED"Requesting access to Semaphore 2\n"RESET);
 #endif
-		// PEND/WAIT ON SEMAPHORE2
+		
 		semaphore2buffer.sem_num = 1;
 		semaphore2buffer.sem_op = -1;
 		semaphore2buffer.sem_flg = 0;
@@ -229,7 +229,7 @@ void cntrl_c_handler_server(int dummy);
 #if DEBUG
 		printf(BOLDRED"Have access to Semaphore 2\n"RESET);
 #endif
-			
+		
 #if TIME
 		gettimeofday(&timer1, NULL);
 #endif
@@ -239,9 +239,9 @@ void cntrl_c_handler_server(int dummy);
 /* ---- OPEN OUTPUT-FILE ---- */
 		
 		sprintf(filename, "picture-%.03d.ppm", k);
-		if (strlen(filename) >= STRINGLENGTH)
+		if (k > 999)
 		{
-			perror(BOLD"\nERROR: output-filename is too long"RESET);
+			perror(BOLD"\nERROR: reached maximum pictures value of 1000"RESET);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -273,7 +273,7 @@ void cntrl_c_handler_server(int dummy);
 		}
 		
 		printf("* Done writing file!\n\n");
-		printf("Generated Picture "BOLD ITALIC"\"out-%.03d.ppm\"\n"RESET, k);
+		printf("Generated Picture "BOLD ITALIC"\"picture-%.03d.ppm\"\n"RESET, k);
 		
 #if TIME
 		gettimeofday(&timer2, NULL);
@@ -333,7 +333,9 @@ void cntrl_c_handler_server(int dummy);
 void cntrl_c_handler_server(int dummy)
 {
 	key_t globalKey;
+	
 	long int typeMessage = 0;
+	
 	int semaphore = 0;
 	int sharedmemid = 0;
 	

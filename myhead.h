@@ -41,7 +41,6 @@
 #include <math.h>
 #include <ctype.h>
 
-
 /* ---- ANSI FORMAT FOR TERMINAL ---- */
 
 #define RESET         "\033[0m"
@@ -68,7 +67,6 @@
 
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
-
 #define DEBUG 0
 #define DEBUG_PIXEL 0
 #define TIME 1
@@ -88,8 +86,6 @@ struct messagetype
 	int height;
 	int type;
 };
-
-
 
 struct message
 {
