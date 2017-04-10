@@ -51,7 +51,8 @@
  *                                 semget(key,2,...) and setting each semaphores values with
  *                                 sem_num 0 for first and 1 for second semaphore
  *          Rev.: 30, 06.04.2017 - Communication between both programs is now working in a loop 1
- *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed in MB/s next to time needed
+ *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed in MB/s next to time
+ *                                 needed
  *          Rev.: 32, 06.04.2017 - Removed helpdesk at loop beginning
  *          Rev.: 33, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *          Rev.: 34, 06.04.2017 - Breaks out of while loop if zoom is over 1
@@ -59,6 +60,7 @@
  *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user output
  *          Rev.: 37, 08.04.2017 - Added the getnewzoom function
  *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
+ *          Rev.: 39, 10.04.2017 - Found a bug in the algorithm
  *
  *
  * \information Algorithm with information of
@@ -477,7 +479,7 @@ int main(int argc, char *argv[])
 		
 /* ---- CHECK IF CURRENTZOOM IS ABOVE 1 ---- */
 		
-		if (currentzoom >= 1)
+		if (currentzoom > 1)
 		{
 			printf(BOLD"Zoomout factor is over 1, break up...\n"RESET);
 			semaphore2buffer.sem_num = 1;
