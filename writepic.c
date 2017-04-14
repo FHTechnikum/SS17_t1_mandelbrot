@@ -26,8 +26,10 @@
  *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
  *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
  *          Rev.: 16, 08.04.2017 - Better user output
- *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
- *          Rev.: 39, 14.04.2017 - Added a local memory due to task description
+ *          Rev.: 17, 10.04.2017 - Embellished code and removed some global variables
+ *          Rev.: 18, 14.04.2017 - Added a local memory due to task description
+ *          Rev.: 19, 14.04.2017 - Changed structure of code due to task description
+ *          Rev.: 19, 14.04.2017 - Bug fix in cntrl-c handler
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch

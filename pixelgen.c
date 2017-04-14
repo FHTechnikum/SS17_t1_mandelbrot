@@ -61,6 +61,8 @@
  *          Rev.: 37, 08.04.2017 - Added the getnewzoom function
  *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
  *          Rev.: 39, 10.04.2017 - Found a bug in the algorithm
+ *          Rev.: 49, 14.04.2017 - Added width and height to global variables because of future
+ *                                 cntrl-c handler
  *
  *
  * \information Algorithm with information of
