@@ -138,6 +138,8 @@ int clearOptarg(char *string, char *input)
 	}
 }
 
+/* ---- NEW ZOOM FUNCTION ---- */
+
 double getnewzoom(double zoom)
 {
 	if (zoom < 0.00005)
@@ -167,6 +169,8 @@ double getnewzoom(double zoom)
 	
 	return zoom;
 }
+
+/* ---- KEY GENERATOR ---- */
 
 key_t getkey(void)
 {

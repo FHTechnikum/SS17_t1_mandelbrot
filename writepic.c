@@ -70,7 +70,6 @@ int main(int argc, char *argv[])
 	int type;
 	
 	FILE* pFout = NULL;
-	
  	PICTURE *picture_Pointer_global = NULL;
 	
 	int k = 0;
@@ -380,7 +379,6 @@ void cntrl_c_handler_server(int dummy)
 	if (sharedmemid == -1)
 	{
 		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
-		exit(EXIT_FAILURE);
 	}
 	
 	if (shmctl(sharedmemid, IPC_RMID, NULL) == -1)
@@ -397,7 +395,6 @@ void cntrl_c_handler_server(int dummy)
 		if (semaphore < 0)
 		{
 			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
-			exit(EXIT_FAILURE);
 		}
 	}
 	
@@ -418,6 +415,9 @@ void cntrl_c_handler_server(int dummy)
 	{
 		perror(BOLD"\nERROR: msgctl: Can't close Message, continue..."RESET);
 	}
+	
+/* ---- CLOSING FILE IF OPEN --- */
+	
 	
 	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n\n");
 	

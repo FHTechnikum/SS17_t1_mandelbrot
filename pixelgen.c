@@ -76,6 +76,8 @@
 
 /* ---- GLOBAL VARIABLES ---- */
 
+int width;
+int height;
 PICTURE *picture_Pointer_local = NULL;
 
 /* ---- MAIN FUNCTION ---- */
@@ -762,5 +764,4 @@ void cntrl_c_handler_client(int dummy)
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
-	
 }
