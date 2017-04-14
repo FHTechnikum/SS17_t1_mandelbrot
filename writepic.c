@@ -27,6 +27,7 @@
  *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
  *          Rev.: 16, 08.04.2017 - Better user output
  *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
+ *          Rev.: 39, 14.04.2017 - Added a local memory due to task description
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -42,6 +43,7 @@
 
 int width;
 int height;
+PICTURE *picture_Pointer_local = NULL;
 
 /* ---- MAIN FUNCTION ---- */
 
@@ -154,6 +156,16 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+	
+/* ---- ALLOCATE MEMORY FOR LOCAL MEMORY ---- */
+	
+	picture_Pointer_local = (PICTURE *)malloc(width * height * sizeof(PICTURE));
+	if (picture_Pointer_local == NULL)
+	{
+		perror(BOLD"\nERROR: malloc: Couldn't allocate local memory"RESET);
+		free(picture_Pointer_local);
+		exit(EXIT_FAILURE);
+	}
 		
 	clear();
 	
@@ -203,6 +215,7 @@ int main(int argc, char *argv[])
 		if (picture_Pointer_global == (PICTURE *)-1)
 		{
 			perror(BOLD"ERROR: shamt: Can't attach Shared-Memory"RESET);
+			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -223,6 +236,7 @@ int main(int argc, char *argv[])
 		if (semop(semaphore, &semaphore2buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 2"RESET);
+			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -230,59 +244,14 @@ int main(int argc, char *argv[])
 		printf(BOLDRED"Have access to Semaphore 2\n"RESET);
 #endif
 		
-#if TIME
-		gettimeofday(&timer1, NULL);
-#endif
-		
-		printf("* Writing file...\n");
-		
-/* ---- OPEN OUTPUT-FILE ---- */
-		
-		sprintf(filename, "picture-%.03d.ppm", k);
-		if (k > 999)
-		{
-			perror(BOLD"\nERROR: reached maximum pictures value of 1000"RESET);
-			exit(EXIT_FAILURE);
-		}
-		
-		pFout = fopen(filename, "wb");
-		if (pFout == NULL)
-		{
-			perror(BOLD"\nERROR: fopen: Couldn't open output file"RESET);
-			exit(EXIT_FAILURE);
-		}
-		
-/* ---- WRITE OUTPUT FILE ---- */
-		
-		fprintf(pFout, "P3\n");
-		fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
-		fprintf(pFout, "#Tpye: %d\n", type);
-		fprintf(pFout, "%u %u\n", width, height);
-		fprintf(pFout, "255\n");
+/* ---- WRITING GLOBAL MEMORY TO LOCAL MEMORY ---- */
 		
 		for (i = 0; i < height*width; i++)
 		{
-			fprintf(pFout, "%u %u %u\n", (picture_Pointer_global+i)->r, (picture_Pointer_global+i)->g, (picture_Pointer_global+i)->b);
+			(picture_Pointer_local+i)->r = (picture_Pointer_global+i)->r;
+			(picture_Pointer_local+i)->g = (picture_Pointer_global+i)->g;
+			(picture_Pointer_local+i)->b = (picture_Pointer_global+i)->b;
 		}
-		
-		error = fclose(pFout);
-		if (error == EOF)
-		{
-			perror(BOLD"\nERROR: fclose: Can't close output file"RESET);
-			exit(EXIT_FAILURE);
-		}
-		
-		printf("* Done writing file!\n\n");
-		printf("Generated Picture "BOLD ITALIC"\"picture-%.03d.ppm\"\n"RESET, k);
-		
-#if TIME
-		gettimeofday(&timer2, NULL);
-		
-		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
-		
-		printf("\n"BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
-		printf(BLACK BACKYELLOW"Write Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
-#endif
 		
 /* ---- RELEASE ACCESS TO SEMAPHORE 1 ---- */
 		
@@ -297,6 +266,7 @@ int main(int argc, char *argv[])
 		if (semop(semaphore, &semaphore1buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 1"RESET);
+			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -313,16 +283,77 @@ int main(int argc, char *argv[])
 		if (shmdt(picture_Pointer_global) == -1)
 		{
 			perror(BOLD"\nERROR: shmdt: Can't detach Shared-Memory"RESET);
+			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
 		
 #if DEBUG
 		printf(BOLDRED"Detached Shared-Memory\n"RESET);
 #endif
+
+/* ---- WRITE FILE ---- */
+		
+#if TIME
+		gettimeofday(&timer1, NULL);
+#endif
+		
+		printf("* Writing file...\n");
+		
+/* ---- OPEN OUTPUT-FILE ---- */
+		
+		sprintf(filename, "picture-%.03d.ppm", k);
+		if (k > 999)
+		{
+			perror(BOLD"\nERROR: reached maximum pictures value of 1000"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
+		pFout = fopen(filename, "wb");
+		if (pFout == NULL)
+		{
+			perror(BOLD"\nERROR: fopen: Couldn't open output file"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
+/* ---- WRITE OUTPUT FILE ---- */
+		
+		fprintf(pFout, "P3\n");
+		fprintf(pFout, "#Mandelbrot Generator by Sebastian Dichler\n");
+		fprintf(pFout, "#Tpye: %d\n", type);
+		fprintf(pFout, "%u %u\n", width, height);
+		fprintf(pFout, "255\n");
+		
+		for (i = 0; i < height*width; i++)
+		{
+			fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+i)->r, (picture_Pointer_local+i)->g, (picture_Pointer_local+i)->b);
+		}
+		
+		error = fclose(pFout);
+		if (error == EOF)
+		{
+			perror(BOLD"\nERROR: fclose: Can't close output file"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
+		}
+		
+		printf("* Done writing file!\n\n");
+		printf("Generated Picture "BOLD ITALIC"\"picture-%.03d.ppm\"\n"RESET, k);
+		
+#if TIME
+		gettimeofday(&timer2, NULL);
+		
+		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
+		
+		printf("\n"BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
+		printf(BLACK BACKYELLOW"Write Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
+#endif
 		
 		k++;
 	}
 	
+	free(picture_Pointer_local);
  	exit(EXIT_SUCCESS);
  }
  
@@ -390,5 +421,6 @@ void cntrl_c_handler_server(int dummy)
 	
 	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n\n");
 	
+	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
 }
