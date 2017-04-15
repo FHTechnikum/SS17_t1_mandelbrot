@@ -353,6 +353,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
+/* ---- IF TYPE IS NOT BETWEEN 0 AND 10 ---- */
+	
 	if (type < 0 || type > 10)
 	{
 		perror(BOLD"\nERROR: Type value must be between 0 and 10"RESET);
