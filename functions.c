@@ -61,6 +61,8 @@ void helpdesk_2(void)
 			"This memory is moved into a global, shared memory.\n\n");
 	printf("The writepic program is reading the pixels from the shared memory\n"
 			"and writes them into a ppm P3 picture.\n\n");
+	printf(BOLD"Please run writepic before pixelgen\n"
+	        "and stop it before pixelgen due to data loss!\n\n"RESET);
 	printf("The whole process is running in a while loop and zooms out of the standard zoom.\n\n");
 			
 	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);

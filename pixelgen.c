@@ -65,6 +65,7 @@
  *                                 cntrl-c handler
  *          Rev.: 50, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
+ *          Rev.: 51, 15.04.2017 - Found bug with global variables and local variables
  *
  *
  * \information Algorithm with information of
@@ -80,8 +81,8 @@
 
 /* ---- GLOBAL VARIABLES ---- */
 
-int width;
-int height;
+int width = 800;
+int height = 600;
 PICTURE *picture_Pointer_local = NULL;
 
 /* ---- MAIN FUNCTION ---- */
@@ -105,8 +106,6 @@ int main(int argc, char *argv[])
 	MESSAGE messagetype;
 	long int typeMessage = 0;
 
-	int width = 800;
-	int height = 600;
 	int iterations = 5000;
 	double width_double;
 	double height_double;

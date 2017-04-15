@@ -13,7 +13,9 @@ pixelgen: $(OBJGEN)
 
 writepic: $(OBJWRI)
 	$(CC) $(CFLAGS) -o writepic $(OBJWRI) $(LDFLAGS)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
+
 clean:
-	rm -rf pixelgen.o writepic.o functions.o
+	rm pixelgen.o writepic.o functions.o
