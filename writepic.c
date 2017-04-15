@@ -32,6 +32,7 @@
  *          Rev.: 20, 14.04.2017 - Bug fix in cntrl-c handler
  *          Rev.: 21, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
+ *          Rev.: 22, 15.04.2017 - Writepic only checks if memory and semaphores are present
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -117,22 +118,22 @@ int main(int argc, char *argv[])
 	
 /* ---- GENERATE SHARED MEMORY ---- */
 	
-	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
+	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), 0);
 	if (sharedmemid == -1 || errno == ENOENT)
 	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
+		perror(BOLD"\nERROR: shmget: Couldn't find Shared-Memory."RESET);
 		exit(EXIT_FAILURE);
 	}
 	
 /* ---- GENERATE SEMAPHORE 1 AND 2 ---- */
 	
-	semaphore = semget(globalKey, 2, IPC_CREAT | 0666 | IPC_EXCL);
+	semaphore = semget(globalKey, 2, 0);
 	if (semaphore < 0)
 	{
 		semaphore = semget(globalKey, 2, 0);
 		if (semaphore < 0)
 		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			perror(BOLD"\nERROR: semget: Couldn't find Semaphore"RESET);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -380,7 +381,7 @@ void cntrl_c_handler_writepic(int dummy)
 		semaphore = semget(globalKey, 2, 0);
 		if (semaphore < 0)
 		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore"RESET);
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -396,7 +397,7 @@ void cntrl_c_handler_writepic(int dummy)
 	
 	if (semop(semaphore, &semaphore1buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
+		perror(BOLD"\nERROR: semop: Can't lock Semaphore 1"RESET);
 	}
 	
 	free(picture_Pointer_local);

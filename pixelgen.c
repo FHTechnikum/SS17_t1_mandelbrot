@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 		semaphore = semget(globalKey, 2, 0);
 		if (semaphore < 0)
 		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore"RESET);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -483,13 +483,7 @@ int main(int argc, char *argv[])
 			printf(BACKGREEN BLACK"New Image:"RESET"\n\n");
 		}
 		
-/* ---- CHECK IF CURRENTZOOM IS ABOVE 1 ---- */
-		
-		if (currentzoom > 1)
-		{
-			printf(BOLD"Zoomout factor is over 1, break up...\n"RESET);
-			cntrl_c_handler_pixelgen(1);
-		}
+		sleep(1);
 		
 /* ---- ALGORITHM CODE FOR COLOR (source in description (algorithm changed!)) ---- */
 		
@@ -754,7 +748,7 @@ void cntrl_c_handler_pixelgen(int dummy)
 		semaphore = semget(globalKey, 2, 0);
 		if (semaphore < 0)
 		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore"RESET);
 		}
 	}
 	
