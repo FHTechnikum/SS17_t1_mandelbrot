@@ -115,7 +115,7 @@ int clearOptarg(char *string, char *input);
 double getnewzoom(double zoom);
 key_t getkey(void);
 
-void cntrl_c_handler_client(int dummy);
-void cntrl_c_handler_server(int dummy);
+void cntrl_c_handler_pixelgen(int dummy);
+void cntrl_c_handler_writepic(int dummy);
 
 #endif /* _myhead_ */

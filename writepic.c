@@ -30,6 +30,8 @@
  *          Rev.: 18, 14.04.2017 - Added a local memory due to task description
  *          Rev.: 19, 14.04.2017 - Changed structure of code due to task description
  *          Rev.: 20, 14.04.2017 - Bug fix in cntrl-c handler
+ *          Rev.: 21, 15.04.2017 - Changed cntrl-c handler for task
+ *                                 pixelgenerator is now closing everything
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -43,8 +45,6 @@
 
 /* ---- GLOBAL VARIABLES ---- */
 
-int width;
-int height;
 PICTURE *picture_Pointer_local = NULL;
 
 /* ---- MAIN FUNCTION ---- */
@@ -70,6 +70,8 @@ int main(int argc, char *argv[])
 	long int mtype = 0;
 
 	int type;
+	int width;
+	int height;
 	
 	FILE* pFout = NULL;
  	PICTURE *picture_Pointer_global = NULL;
@@ -192,7 +194,7 @@ int main(int argc, char *argv[])
 
 /* ---- CTRL+C HANDLER ---- */
 	
-	signal(SIGINT, cntrl_c_handler_server);
+	signal(SIGINT, cntrl_c_handler_writepic);
 	
 /* ---- ALGORITHM START ---- */
 	
@@ -267,6 +269,7 @@ int main(int argc, char *argv[])
 		if (semop(semaphore, &semaphore1buffer, 1) == -1)
 		{
 			perror(BOLD"\nERROR: semop: Can't unlock Semaphore 1"RESET);
+			perror(BOLD"Pixelgenerator maybe closed session!"RESET);
 			free(picture_Pointer_local);
 			exit(EXIT_FAILURE);
 		}
@@ -362,33 +365,14 @@ int main(int argc, char *argv[])
 /* F U N C T I O N S                                                */
 /*------------------------------------------------------------------*/
 
-void cntrl_c_handler_server(int dummy)
+void cntrl_c_handler_writepic(int dummy)
 {
 	key_t globalKey;
 	
-	long int typeMessage = 0;
-	
+	SEMBUF semaphore1buffer;
 	int semaphore = 0;
-	int sharedmemid = 0;
 	
 	globalKey = getkey();
-	
-	printf(BOLD"\nYou just typed CTRL+C\nServer is closing everything...\n\n"RESET);
-	
-/* ---- CLOSING SHARED MEMORY ---- */
-	
-	sharedmemid = shmget(globalKey, (width * height * sizeof(PICTURE)), IPC_CREAT | 0666);
-	if (sharedmemid == -1)
-	{
-		perror(BOLD"\nERROR: shmget: Couldn't generate Shared-Memory."RESET);
-	}
-	
-	if (shmctl(sharedmemid, IPC_RMID, NULL) == -1)
-	{
-		perror(BOLD"\nERROR: shmctl: Can't control Shared-Memory, continue..."RESET);
-	}
-	
-/* ---- CLOSING SEMAPHORE ---- */
 	
 	semaphore = semget(globalKey, 2, IPC_CREAT | 0666);
 	if (semaphore < 0)
@@ -396,32 +380,24 @@ void cntrl_c_handler_server(int dummy)
 		semaphore = semget(globalKey, 2, 0);
 		if (semaphore < 0)
 		{
-			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 1"RESET);
+			perror(BOLD"\nERROR: semget: Couldn't generate Semaphore 2"RESET);
+			free(picture_Pointer_local);
+			exit(EXIT_FAILURE);
 		}
 	}
 	
-	if (semctl(semaphore, IPC_RMID, 0) == -1)
+	printf(BOLD"\nYou just typed CTRL+C\nWriter is closing connection...\n\n"RESET);
+	
+/* ---- REQUESTING ACCESS TO SEMAPHORE 1 ---- */
+	
+	semaphore1buffer.sem_num = 0;
+	semaphore1buffer.sem_op = -1;
+	semaphore1buffer.sem_flg = IPC_NOWAIT;
+	
+	if (semop(semaphore, &semaphore1buffer, 1) == -1)
 	{
-		perror(BOLD"\nERROR: semctl: Can't control Semaphore 1, continue..."RESET);
+		perror(BOLD"\nERROR: semop: Can't lock Semaphore 2"RESET);
 	}
-	
-/* ---- CLOSING MESSAGE ---- */
-	
-	typeMessage = msgget(globalKey, IPC_CREAT | 0666);
-	if (typeMessage == -1)
-	{
-		perror(BOLD"\nERROR: msgget: Can't get Message"RESET);
-	}
-	
-	if (msgctl(typeMessage, IPC_RMID, 0) == -1)
-	{
-		perror(BOLD"\nERROR: msgctl: Can't close Message, continue..."RESET);
-	}
-	
-/* ---- CLOSING FILE IF OPEN --- */
-	
-	
-	printf("If any error appeared check it manually with ipcs and remove them with ipcrm\n\n");
 	
 	free(picture_Pointer_local);
 	exit(EXIT_SUCCESS);
