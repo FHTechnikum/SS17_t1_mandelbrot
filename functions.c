@@ -6,6 +6,7 @@
  *          Rev.: 02, 04.04.2017 - Changed helpdesk_2 function
  *          Rev.: 03, 06.04.2017 - Added getkey function
  *          Rev.: 04, 08.04.2107 - Added getnewzoom function
+ *          Rev.: 05, 16.04.2017 - Changed getnewzoom function
  *
  *
  * \information Some functions from my previous tasks due to
@@ -144,7 +145,27 @@ int clearOptarg(char *string, char *input)
 
 double getnewzoom(double zoom)
 {
-	if (zoom < 0.00005)
+	if (zoom < 0.0000000005)
+	{
+		zoom = zoom + 0.00000000005;
+	}
+	else if (zoom < 0.000000005)
+	{
+		zoom = zoom + 0.0000000005;
+	}
+	else if (zoom < 0.00000005)
+	{
+		zoom = zoom + 0.000000005;
+	}
+	else if (zoom < 0.0000005)
+	{
+		zoom = zoom + 0.00000005;
+	}
+	else if (zoom < 0.000005)
+	{
+		zoom = zoom + 0.0000005;
+	}
+	else if (zoom < 0.00005)
 	{
 		zoom = zoom + 0.000005;
 	}
