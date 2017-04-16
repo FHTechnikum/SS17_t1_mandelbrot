@@ -5,7 +5,7 @@
  * \version Rev.: 01, 28.03.2017 - Changed Helpdesk function
  *          Rev.: 02, 04.04.2017 - Changed helpdesk_2 function
  *          Rev.: 03, 06.04.2017 - Added getkey function
- *          Rev.: 04, 08.04.2107 - Added getnewzoom function
+ *          Rev.: 04, 08.04.2017 - Added getnewzoom function
  *          Rev.: 05, 16.04.2017 - Changed getnewzoom function
  *
  *
