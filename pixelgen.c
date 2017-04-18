@@ -67,6 +67,7 @@
  *                                 pixelgenerator is now closing everything
  *          Rev.: 51, 15.04.2017 - Found bug with global variables and local variables
  *          Rev.: 52, 18.04.2017 - Added color types, due to task description no break for zoom > 2 possible
+ *                                 The SINUS and PT1 are somehow buggy
  *
  *
  * \information Algorithm with information of
