@@ -66,11 +66,12 @@
  *          Rev.: 50, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
  *          Rev.: 51, 15.04.2017 - Found bug with global variables and local variables
+ *          Rev.: 52, 18.04.2017 - Added color types, due to task description no break for zoom > 2 possible
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
- *              CNTRL+C handler with help of Helmut Resch
+ *              CNTRL+C handler and color types with help of Helmut Resch
  *              Will change color algorithm
  *				Tried to remove global variables requested for the signal handler, but
  *              not working with normal POSIX
@@ -124,11 +125,13 @@ int main(int argc, char *argv[])
 	int colorr;
 	int colorg;
 	int colorb;
+	int colortype = 0;
 	
 	char widthString[STRINGLENGTH];
 	char heightString[STRINGLENGTH];
 	char iterationsString[STRINGLENGTH];
 	char typeString[STRINGLENGTH];
+	char colorString[STRINGLENGTH];
 	
 	PICTURE *picture_Pointer_global = NULL;
 	
@@ -151,7 +154,7 @@ int main(int argc, char *argv[])
 	
 /* ---- PARAMETER HANDLING ---- */
 	
-	while ((opt = getopt (argc, argv, "w:h:i:t:?")) != -1)
+	while ((opt = getopt (argc, argv, "w:h:i:t:c:?")) != -1)
 	{
 		switch (opt)
 		{
@@ -217,6 +220,22 @@ int main(int argc, char *argv[])
 				}
 				
 				type = strtod(typeString, &pEnd);
+			break;
+			
+			case 'c':
+				error = clearOptarg(colorString, optarg);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
+				error = check_number(colorString);
+				if (error == 1)
+				{
+					errorcount++;
+				}
+				
+				colortype = strtod(colorString, &pEnd);
 			break;
 			
 			case '?':
@@ -350,14 +369,6 @@ int main(int argc, char *argv[])
 	if (errorcount != 0)
 	{
 		perror(BOLD"\nERROR: One or more Parameters are not correct"RESET);
-		exit(EXIT_FAILURE);
-	}
-	
-/* ---- IF TYPE IS NOT BETWEEN 0 AND 10 ---- */
-	
-	if (type < 0 || type > 10)
-	{
-		perror(BOLD"\nERROR: Type value must be between 0 and 10"RESET);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -532,11 +543,64 @@ int main(int argc, char *argv[])
 				
 				else
 				{
-					z = sqrt(newRe * newRe + newIm * newIm);
-					iterations_double = iterations;
-					brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
-					brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
-					brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
+					switch (colortype)
+					{
+						case 1: /* SINUS CYAN */
+							brightnessr = 0;
+							brightnessg = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessb = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+						break;
+						
+						case 2: /* SINUS RED */
+							brightnessr = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessg = 0;
+							brightnessb = 0;
+						break;
+						
+						case 3: /* SINUS GREEN */
+							brightnessr = 0;
+							brightnessg = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessb = 0;
+						break;
+						
+						case 4: /* SINUS BLUE */
+							brightnessr = 0;
+							brightnessg = 0;
+							brightnessb = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+						break;
+						
+						case 5: /* PT1 CYAN */
+							brightnessr = 0;
+							brightnessg = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessb = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+						break;
+						
+						case 6: /* PT1 RED */
+							brightnessr = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessg = 0;
+							brightnessb = 0;
+						break;
+						
+						case 7: /* PT1 GREEN */
+							brightnessr = 0;
+							brightnessg = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessb = 0;
+						break;
+						
+						case 8: /* PT1 BLUE */
+							brightnessr = 0;
+							brightnessg = 0;
+							brightnessb = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+						break;
+						
+						default: /* LOG LOG */
+							z = sqrt(newRe * newRe + newIm * newIm);
+							iterations_double = iterations;
+							brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
+							brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
+							brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
+						break;
+					}
 					
 					(picture_Pointer_local+k)->r = brightnessr;
 					(picture_Pointer_local+k)->g = brightnessg;
