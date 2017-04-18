@@ -6,13 +6,19 @@ LDFLAGS	= -lm
 OBJGEN	= pixelgen.o functions.o myhead.h
 OBJWRI	= writepic.o functions.o myhead.h
 
-all: pixelgen writepic clean
+all: pixelgen movepixelgen writepic movewritepic clean
 
 pixelgen: $(OBJGEN)
-	$(CC) $(CFLAGS) -o pixelgen $(OBJGEN) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(OBJGEN) $(LDFLAGS)
+
+movepixelgen:
+	mv a.out pixelgen
 
 writepic: $(OBJWRI)
-	$(CC) $(CFLAGS) -o writepic $(OBJWRI) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(OBJWRI) $(LDFLAGS)
+
+movewritepic:
+	mv a.out writepic
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
