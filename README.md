@@ -42,6 +42,7 @@ Useable parameters
   6   for PT1 red  
   7   for PT1 green  
   8   for PT1 blue  
-  0   for log log all channels  
+  9   for LOG LOG colorfull (use less iterations)  
+  0   for LOG LOG all channels  
 -?    to print help message  
 </pre>

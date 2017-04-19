@@ -68,6 +68,7 @@
  *          Rev.: 51, 15.04.2017 - Found bug with global variables and local variables
  *          Rev.: 52, 18.04.2017 - Added color types, due to task description no break for zoom > 2 possible
  *                                 The SINUS and PT1 are somehow buggy
+ *          Rev.: 53, 19.04.2017 - Added new color mapping template
  *
  *
  * \information Algorithm with information of
@@ -109,8 +110,8 @@ int main(int argc, char *argv[])
 	long int typeMessage = 0;
 
 	int iterations = 5000;
-	double width_double;
-	double height_double;
+	double double_width;
+	double double_height;
 	
 	int x, y;
 	double pr, pi;
@@ -122,7 +123,8 @@ int main(int argc, char *argv[])
 	int brightnessg;
 	int brightnessb;
 	double z;
-	double iterations_double;
+	double double_iterations;
+	double value;
 	int colorr;
 	int colorg;
 	int colorb;
@@ -478,8 +480,8 @@ int main(int argc, char *argv[])
 	
 /* ---- NEEDED FOR ALGORITHM BUT ARE STATIC ----*/
 	
-	width_double = width;
-	height_double = height;
+	double_width = width;
+	double_height = height;
 	currentzoom = zoom;
 	
 /* ---- CTRL+C HANDLER ---- */
@@ -512,7 +514,7 @@ int main(int argc, char *argv[])
 		{
 			for (x = 0; x < width; x++)
 			{
-				pr = (width_double/height_double) * (x - width / 2) / (0.5 * (1/currentzoom) * width) + moveX;
+				pr = (double_width/double_height) * (x - width / 2) / (0.5 * (1/currentzoom) * width) + moveX;
 				pi = (y - height / 2) / (0.5 * (1/currentzoom) * height) + moveY;
 				
 				newRe = newIm = oldRe = oldIm = 0;
@@ -547,59 +549,179 @@ int main(int argc, char *argv[])
 					switch (colortype)
 					{
 						case 1: /* SINUS CYAN */
+							double_iterations = iterations;
+							value = 255 * llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
 							brightnessr = 0;
-							brightnessg = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
-							brightnessb = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessg = value;
+							brightnessb = value;
 						break;
 						
 						case 2: /* SINUS RED */
-							brightnessr = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							double_iterations = iterations;
+							value = 255 * llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessr = value;
 							brightnessg = 0;
 							brightnessb = 0;
 						break;
 						
 						case 3: /* SINUS GREEN */
+							double_iterations = iterations;
+							value = 255 * llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
 							brightnessr = 0;
-							brightnessg = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessg = value;
 							brightnessb = 0;
 						break;
 						
 						case 4: /* SINUS BLUE */
+							double_iterations = iterations;
+							value = 255 * llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
 							brightnessr = 0;
 							brightnessg = 0;
-							brightnessb = llround(255.0/2.0*sin(i/(25)-1.57079632679)+255.0/2.0);
+							brightnessb = value;
 						break;
 						
 						case 5: /* PT1 CYAN */
+							value = 255 * llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
 							brightnessr = 0;
-							brightnessg = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
-							brightnessb = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessg = value;
+							brightnessb = value;
 						break;
 						
 						case 6: /* PT1 RED */
-							brightnessr = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							value = 255 * llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessr = value;
 							brightnessg = 0;
 							brightnessb = 0;
 						break;
 						
 						case 7: /* PT1 GREEN */
+							value = 255 * llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
 							brightnessr = 0;
-							brightnessg = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessg = value;
 							brightnessb = 0;
 						break;
 						
 						case 8: /* PT1 BLUE */
+							value = 255 * llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
 							brightnessr = 0;
 							brightnessg = 0;
-							brightnessb = llround(255.0 - 255.0 * exp(i / 100 * (-1.0)));
+							brightnessb = value;
+						break;
+						
+						case 9: /* COLOR */
+							z = sqrt(newRe * newRe + newIm * newIm);
+							double_iterations = iterations;
+							
+							if (i < iterations % 16)
+							{
+								brightnessr = 66 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 30 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 15 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 2)
+							{
+								brightnessr = 25 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 7 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 26 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 3)
+							{
+								brightnessr = 9 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 1 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 47 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 4)
+							{
+								brightnessr = 4 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 4 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 73 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 5)
+							{
+								brightnessr = 0 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 7 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 100 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 6)
+							{
+								brightnessr = 12 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 44 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 138 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 7)
+							{
+								brightnessr = 24 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 82 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 177 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 8)
+							{
+								brightnessr = 57 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 125 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 209 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 9)
+							{
+								brightnessr = 134 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 181 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 229 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 10)
+							{
+								brightnessr = 211 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 236 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 248 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 11)
+							{
+								brightnessr = 241 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 233 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 191 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 12)
+							{
+								brightnessr = 248 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 201 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 95 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 13)
+							{
+								brightnessr = 255 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 170 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 0 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 14)
+							{
+								brightnessr = 204 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 128 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 0 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 15)
+							{
+								brightnessr = 153 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 87 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 0 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else if (i < (iterations % 16) * 16)
+							{
+								brightnessr = 106 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 52 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 3 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
+							else
+							{
+								brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+							}
 						break;
 						
 						default: /* LOG LOG */
 							z = sqrt(newRe * newRe + newIm * newIm);
-							iterations_double = iterations;
-							brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorr;
-							brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorg;
-							brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(iterations_double) + colorb;
+							double_iterations = iterations;
+							brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations) + colorr;
+							brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations) + colorg;
+							brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations) + colorb;
 						break;
 					}
 					
