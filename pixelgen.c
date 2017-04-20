@@ -69,6 +69,7 @@
  *          Rev.: 52, 18.04.2017 - Added color types, due to task description no break for zoom > 2 possible
  *                                 The SINUS and PT1 are somehow buggy
  *          Rev.: 53, 19.04.2017 - Added new color mapping template
+ *          Rev.: 54, 20.04.2017 - Changed function declaration of signal handler to static
  *
  *
  * \information Algorithm with information of
@@ -81,6 +82,8 @@
  */
 
 #include "myhead.h"
+
+static void cntrl_c_handler_pixelgen(int dummy);
 
 /* ---- GLOBAL VARIABLES ---- */
 

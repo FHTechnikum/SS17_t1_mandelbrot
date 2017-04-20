@@ -33,6 +33,7 @@
  *          Rev.: 21, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
  *          Rev.: 22, 15.04.2017 - Writepic only checks if memory and semaphores are present
+ *          Rev.: 23, 20.04.2017 - Changed function declaration of signal handler to static
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
@@ -43,6 +44,8 @@
  */
 
 #include "myhead.h"
+
+static void cntrl_c_handler_writepic(int dummy);
 
 /* ---- GLOBAL VARIABLES ---- */
 
