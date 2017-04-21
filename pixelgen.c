@@ -714,8 +714,8 @@ int main(int argc, char *argv[])
 							else
 							{
 								brightnessr = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
-							brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
-							brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessg = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
+								brightnessb = 256 * log2(1.75 + i - log2(log2(z))) / log2(double_iterations);
 							}
 						break;
 						
