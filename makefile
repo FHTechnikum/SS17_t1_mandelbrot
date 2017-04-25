@@ -24,4 +24,5 @@ movewritepic:
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm pixelgen.o writepic.o functions.o
+	find . -name "*.o" -exec rm {} \;
+	find . -name "*.h.gch" -exec rm {} \;
