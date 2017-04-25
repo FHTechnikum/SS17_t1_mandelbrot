@@ -79,6 +79,8 @@
  *				Tried to remove global variables requested for the signal handler, but
  *              not working with normal POSIX
  *
+ *              I use color map 9 (less iterations (1000-5000)) and default for undefined much iterations
+ *              PT1, SINUS are somehow not working well, but made by Helmut Resch
  */
 
 #include "myhead.h"
