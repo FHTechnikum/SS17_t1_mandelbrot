@@ -11,34 +11,45 @@
  *          Rev.: 03, 30.03.2017 - Added sharedmemory read
  *                                 -> add while(1), SIGNAL, and SIGNAl handler
  *          Rev.: 04, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
- *          Rev.: 05, 01.04.2017 - Should be done now, but somehow the pixelgen is buggy
+ *          Rev.: 05, 01.04.2017 - Should be done now, but somehow the pixelgen
+ *                                 is buggy
  *          Rev.: 06, 03.04.2017 - Debug messages for while(1)
  *          Rev.: 07, 04.04.2017 - New semaphore handling (still buggy)
- *          Rev.: 08, 06.04.2017 - Added Message structs and global key and removed global
- *                                 varibales
+ *          Rev.: 08, 06.04.2017 - Added Message structs and global key and
+ *                                 removed global varibales
  *          Rev.: 09, 06.04.2017 - Semaphore 2 is allways open?
  *          Rev.: 10, 06.04.2017 - Programms are now working with semaphores, using
- *                                 semget(key,2,...) and setting each semaphores values with
- *                                 sem_num 0 for first and 1 for second semaphore
- *          Rev.: 11, 06.04.2017 - Communication between both programs is now working in a loop 1
- *          Rev.: 12, 06.04.2017 - Reduced global varibales, write speed in MB/s next to time needed
+ *                                 semget(key,2,...) and setting each semaphores
+ *                                 values with sem_num 0 for first and 1 for
+ *                                 second semaphore
+ *          Rev.: 11, 06.04.2017 - Communication between both programs is now
+ *                                 working in a loop 1
+ *          Rev.: 12, 06.04.2017 - Reduced global varibales, write speed in MB/s
+ *                                 next to time needed
  *          Rev.: 13, 06.04.2017 - Removed helpdesk at loop beginning
- *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing error messages
- *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user output
+ *          Rev.: 14, 06.04.2017 - The CNTRL+C handler is working but printing
+ *                                 error messages
+ *          Rev.: 15, 07.04.2017 - Better variable zoom method and better user
+ *                                 output
  *          Rev.: 16, 08.04.2017 - Better user output
- *          Rev.: 17, 10.04.2017 - Embellished code and removed some global variables
+ *          Rev.: 17, 10.04.2017 - Embellished code and removed some global
+ *                                 variables
  *          Rev.: 18, 14.04.2017 - Added a local memory due to task description
- *          Rev.: 19, 14.04.2017 - Changed structure of code due to task description
+ *          Rev.: 19, 14.04.2017 - Changed structure of code due to task
+ *                                 description
  *          Rev.: 20, 14.04.2017 - Bug fix in cntrl-c handler
  *          Rev.: 21, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
- *          Rev.: 22, 15.04.2017 - Writepic only checks if memory and semaphores are present
- *          Rev.: 23, 20.04.2017 - Changed function declaration of signal handler to static
+ *          Rev.: 22, 15.04.2017 - Writepic only checks if memory and semaphores
+ *                                 are present
+ *          Rev.: 23, 20.04.2017 - Changed function declaration of signal handler
+ *                                 to static
+ *          Rev.: 24, 26.04.2017 - Changed C style, for 80 chars per line
  *
  *
  * \information CNTRL+C handler with help of Helmut Resch
- *              Tried to remove global variables requested for the signal handler, but
- *              not working with normal POSIX
+ *              Tried to remove global variables requested for the signal handler,
+ *              but not working with normal POSIX
  *
  *
  */
@@ -181,7 +192,8 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);
 	printf(BOLDRED"Key: %d\n\n"RESET, globalKey);
-	printf(BOLDRED"Size for each picture: %dkByte\n"RESET, (sizeof(PICTURE)*height*width)/1000);
+	printf(BOLDRED"Size for each picture: %dkByte\n"RESET,
+		(sizeof(PICTURE)*height*width)/1000);
 	
 	printf(BOLDRED"Width: %d\n"RESET, width);
 	printf(BOLDRED"Height: %d\n"RESET, height);
@@ -309,7 +321,12 @@ int main(int argc, char *argv[])
 		
 /* ---- OPEN OUTPUT-FILE ---- */
 		
-		sprintf(filename, "picture-%.03d.ppm", k);
+		error = snprintf(filename, STRINGLENGTH, "picture-%.03d.ppm", k);
+		if (error < 0 || error > 15)
+		{
+			perror(BOLD"\nERROR: snprintf: Couldn't generate string for picture"RESET);
+		}
+		
 		if (k > 999)
 		{
 			perror(BOLD"\nERROR: reached maximum pictures value of 1000"RESET);
@@ -335,7 +352,9 @@ int main(int argc, char *argv[])
 		
 		for (i = 0; i < height*width; i++)
 		{
-			fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+i)->r, (picture_Pointer_local+i)->g, (picture_Pointer_local+i)->b);
+			fprintf(pFout, "%u %u %u\n", (picture_Pointer_local+i)->r,
+											(picture_Pointer_local+i)->g,
+											(picture_Pointer_local+i)->b);
 		}
 		
 		error = fclose(pFout);
@@ -354,8 +373,10 @@ int main(int argc, char *argv[])
 		
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 		
-		printf("\n"BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
-		printf(BLACK BACKYELLOW"Write Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
+		printf("\n"BLACK BACKYELLOW"Wrote file within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n",
+			timediff);
+		printf(BLACK BACKYELLOW"Write Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n",
+			(((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
 		
 		k++;

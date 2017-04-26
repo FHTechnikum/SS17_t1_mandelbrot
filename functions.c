@@ -9,6 +9,7 @@
  *          Rev.: 05, 16.04.2017 - Changed getnewzoom function
  *          Rev.: 06, 18.04.2017 - Changed helpdesk function
  *                                 for color type
+ *          Rev.: 07, 26.04.2017 - Changed C style, for 80 chars per line
  *
  *
  * \information Some functions from my previous tasks due to
@@ -66,7 +67,8 @@ void helpdesk_2(void)
 			"and writes them into a ppm P3 picture.\n\n");
 	printf(BOLD"Please run writepic before pixelgen\n"
 	        "and stop it before pixelgen due to data loss!\n\n"RESET);
-	printf("The whole process is running in a while loop and zooms out of the standard zoom.\n\n");
+	printf("The whole process is running in a while loop and zooms out of the"
+			"standard zoom.\n\n");
 			
 	printf(BOLD ITALIC"OPTIONAL PARAMETERS:\n"RESET);
 	printf("- "BOLD"[-w]\t"RESET" to change Image width\n");

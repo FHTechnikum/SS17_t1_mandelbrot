@@ -1,87 +1,105 @@
 /* !* PIXELGENERATOR PROCESS
  *
- * \description Generates mandelbrot / apfelmännchien figures with different offset
- *              and zoom
+ * \description Generates mandelbrot / apfelmännchien figures with different
+ *              offset and zoom
  *
  *
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 23.03.2017 - Created
- *          Rev.: 02, 23.03.2017 - created the main function and parts of its declarations
- *          Rev.: 03, 24.03.2017 - Created the init of pixelgen.c and searched web for a algorithm
+ *          Rev.: 02, 23.03.2017 - created the main function and parts of its
+ *                                 declarations
+ *          Rev.: 03, 24.03.2017 - Created the init of pixelgen.c and searched
+ *                                 web for a algorithm
  *                                 failure present but can't find it.
  *          Rev.: 04, 25.03.2017 - Changed algorithm now its working
- *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation in pixelgen.c to
- *                                 check if algorithm is working -> will remove this after
- *                                 programming
- *                                 the writepic.c files
- *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter (change this to given values
- *                                 with 1,2,3 change)
- *          Rev.: 07, 27.03.2017 - Changed file handling for prototype (algorithm check)
+ *          Rev.: 05, 25.03.2017 - Created Timestemps and Output file generation
+ *                                 in pixelgen.c to
+ *                                 check if algorithm is working -> will remove
+ *                                 this after programming the writepic.c files
+ *          Rev.: 06, 26.03.2017 - Added zoom and colorb to parameter
+ *                                 (change this to given values with 1,2,3 change)
+ *          Rev.: 07, 27.03.2017 - Changed file handling for prototype
+ *                                 (algorithm check)
  *          Rev.: 08, 27.03.2017 - Trying mutlithreading, is not working currently
- *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values with 1,2,3 change
+ *          Rev.: 09, 28.03.2017 - Removing manual zoom and move to given values
+ *                                 with 1,2,3 change
  *          Rev.: 10, 28.03.2017 - Added switch for given move and zoom values,
  *                                 currently not working right (using zoom)
- *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values, its now working
- *                                 fine :)
+ *          Rev.: 11, 28.03.2017 - Fixed bug with given move and zoom values,
+ *                                 its now working fine :)
  *                                 zoom = 1/zoom
- *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still missing)
+ *          Rev.: 12, 28.03.2017 - Changed templates (colors change is still
+ *                                 missing)
  *          Rev.: 13, 28.03.2017 - User output fixes
  *          Rev.: 14, 28.03.2017 - Added template
  *          Rev.: 15, 29.03.2017 - Added another timer and removed the omp library
- *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter and added
- *                                 maxrange colorsettigns to algorithm
+ *          Rev.: 16, 29.03.2017 - Added colors (not well yet), removed b parameter
+ *                                 and added maxrange colorsettigns to algorithm
  *          Rev.: 17, 30.03.2017 - Changed file output
- *          Rev.: 18, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory to pixelgen
- *                                 -> filling memory with values
+ *          Rev.: 18, 30.03.2017 - Added semaphore1, semaphore2 and sharedmemory
+ *                                 to pixelgen -> filling memory with values
  *          Rev.: 19, 30.03.2017 - Communication is working now
  *                                 -> add while(1), SIGNAL, and SIGNAL handler
- *          Rev.: 20, 31.03.2017 - Changed algorithm ratio, its ratio is now correct with
- *                                 width/height instead of 1.5
+ *          Rev.: 20, 31.03.2017 - Changed algorithm ratio, its ratio is now
+ *                                 correct with width/height instead of 1.5
  *          Rev.: 21, 01.04.2017 - Writing the CNTRL+C handler and while(1) loop
- *          Rev.: 22, 01.04.2017 - Removed Makefile in pixelgen due to working writepic
+ *          Rev.: 22, 01.04.2017 - Removed Makefile in pixelgen due to working
+ *                                 writepic
  *          Rev.: 23, 01.04.2017 - Done but buggy
  *          Rev.: 24, 03.04.2017 - Fix in Useroutput
  *          Rev.: 25, 03.04.2017 - Debug messages for while(1)
  *          Rev.: 26, 04.04.2017 - New semaphore handling (still buggy)
- *          Rev.: 27, 06.04.2017 - Added Message structs and global key and removed global
- *                                 variables
+ *          Rev.: 27, 06.04.2017 - Added Message structs and global key and
+ *                                 removed global variables
  *          Rev.: 28, 06.04.2017 - Semaphore 2 is allways open?
- *          Rev.: 29, 06.04.2017 - Programms are now working with semaphores, using
- *                                 semget(key,2,...) and setting each semaphores values with
- *                                 sem_num 0 for first and 1 for second semaphore
- *          Rev.: 30, 06.04.2017 - Communication between both programs is now working in a loop 1
- *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed in MB/s next to time
- *                                 needed
+ *          Rev.: 29, 06.04.2017 - Programms are now working with semaphores,
+ *                                 using semget(key,2,...) and setting each
+ *                                 semaphores values with sem_num 0 for first
+ *                                 and 1 for second semaphore
+ *          Rev.: 30, 06.04.2017 - Communication between both programs is now
+ *                                 working in a loop 1
+ *          Rev.: 31, 06.04.2017 - Reduced global varibales, generate speed
+ *                                 in MB/s next to time needed
  *          Rev.: 32, 06.04.2017 - Removed helpdesk at loop beginning
- *          Rev.: 33, 06.04.2017 - The CNTRL+C handler is working but printing error messages
+ *          Rev.: 33, 06.04.2017 - The CNTRL+C handler is working but printing
+ *                                 error messages
  *          Rev.: 34, 06.04.2017 - Breaks out of while loop if zoom is over 1
- *          Rev.: 35, 07.04.2017 - Added variable zoom out factor for lower zoom in zoomfactor < 0.3
- *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user output
+ *          Rev.: 35, 07.04.2017 - Added variable zoom out factor for lower zoom
+ *                                 in zoomfactor < 0.3
+ *          Rev.: 36, 07.04.2017 - Better variable zoom method and better user
+ *                                 output
  *          Rev.: 37, 08.04.2017 - Added the getnewzoom function
- *          Rev.: 38, 10.04.2017 - Embellished code and removed some global variables
+ *          Rev.: 38, 10.04.2017 - Embellished code and removed some global
+ *                                 variables
  *          Rev.: 39, 10.04.2017 - Found a bug in the algorithm
- *          Rev.: 49, 14.04.2017 - Added width and height to global variables because of future
- *                                 cntrl-c handler
+ *          Rev.: 49, 14.04.2017 - Added width and height to global variables
+ *                                 because of future cntrl-c handler
  *          Rev.: 50, 15.04.2017 - Changed cntrl-c handler for task
  *                                 pixelgenerator is now closing everything
- *          Rev.: 51, 15.04.2017 - Found bug with global variables and local variables
- *          Rev.: 52, 18.04.2017 - Added color types, due to task description no break for zoom > 2 possible
+ *          Rev.: 51, 15.04.2017 - Found bug with global variables and local
+ *                                 variables
+ *          Rev.: 52, 18.04.2017 - Added color types, due to task description no
+ *                                 break for zoom > 2 possible
  *                                 The SINUS and PT1 are somehow buggy
  *          Rev.: 53, 19.04.2017 - Added new color mapping template
- *          Rev.: 54, 20.04.2017 - Changed function declaration of signal handler to static
- *          Rev.: 55, 25.04.2017 - Fixed problems with SINUS and PT1 color map, but still not working
+ *          Rev.: 54, 20.04.2017 - Changed function declaration of signal handler
+ *                                 to static
+ *          Rev.: 55, 25.04.2017 - Fixed problems with SINUS and PT1 color map,
+ *                                 but still not working
  *          Rev.: 56, 25.04.2017 - New value for SINUS
+ *          Rev.: 57, 26.04.2017 - Changed C style, for 80 chars per line
  *
  *
  * \information Algorithm with information of
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *              CNTRL+C handler and color types with help of Helmut Resch
  *              Will change color algorithm
- *				Tried to remove global variables requested for the signal handler, but
- *              not working with normal POSIX
+ *				Tried to remove global variables requested for the signal handler,
+ *              but not working with normal POSIX
  *
- *              I use color map 9 (less iterations (1000-5000)) and default for undefined much iterations
+ *              I use color map 9 (less iterations (1000-5000)) and default for
+ *              undefined much iterations
  *              PT1, SINUS are somehow not working well, but made by Helmut Resch
  */
 
@@ -468,13 +486,15 @@ int main(int argc, char *argv[])
 	printf(BOLDRED"Sharedmem ID: %d\n"RESET, sharedmemid);
 	printf(BOLDRED"Message ID: %ld\n"RESET, typeMessage);;
 	printf(BOLDRED"Key: %d\n\n"RESET, globalKey);
-	printf(BOLDRED"Size for each picture: %dkByte\n"RESET, (sizeof(PICTURE)*height*width)/1000);
+	printf(BOLDRED"Size for each picture: %dkByte\n"RESET,
+		(sizeof(PICTURE)*height*width)/1000);
 	
 	printf(BOLDRED"\nwidth: %d\n"RESET, width);
 	printf(BOLDRED"height: %d\n"RESET, height);
 	printf(BOLDRED"iterations: %d\n"RESET, iterations);
 	printf(BOLDRED"Type: %d\n", type);
-	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n\n"RESET, moveX, moveY, zoom);
+	printf(BOLDRED"-moveX: %.15f -moveY: %.15f -zoom: %.15f\n\n"RESET,
+		moveX, moveY, zoom);
 #endif
 	
 /*------------------------------------------------------------------*/
@@ -507,7 +527,7 @@ int main(int argc, char *argv[])
 		
 		sleep(1);
 		
-/* ---- ALGORITHM CODE FOR COLOR (source in description (algorithm changed!)) ---- */
+/* ---- ALGORITHM CODE FOR COLOR (source in description (changed)) ---- */
 		
 #if TIME
 		gettimeofday(&timer1, NULL);
@@ -522,6 +542,7 @@ int main(int argc, char *argv[])
 			for (x = 0; x < width; x++)
 			{
 				pr = (double_width/double_height) * (x - width / 2) / (0.5 * (1/currentzoom) * width) + moveX;
+				
 				pi = (y - height / 2) / (0.5 * (1/currentzoom) * height) + moveY;
 				
 				newRe = newIm = oldRe = oldIm = 0;
@@ -775,7 +796,8 @@ int main(int argc, char *argv[])
 		f++;
 		
 		printf(ITALIC"Values:\n"RESET);
-		printf("-Zoom: %.07f -OffsetX: %f -OffsetY: %f\n\n", currentzoom, moveX, moveY);
+		printf("-Zoom: %.07f -OffsetX: %f -OffsetY: %f\n\n",
+			currentzoom, moveX, moveY);
 		
 #if TIME
 		gettimeofday(&timer2, NULL);
@@ -786,7 +808,8 @@ int main(int argc, char *argv[])
 #if DEBUG_PIXEL
 		for (w = 0; w < height*width; w++)
 		{
-			printf(BOLDRED ITALIC"Pixel: %010d RGB: %03d "RESET, w+1, (picture_Pointer_local+w)->r);
+			printf(BOLDRED ITALIC"Pixel: %010d RGB: %03d "RESET,
+				w+1, (picture_Pointer_local+w)->r);
 			printf(BOLDRED ITALIC"%03d "RESET, (picture_Pointer_local+w)->g);
 			printf(BOLDRED ITALIC"%03d | "RESET, (picture_Pointer_local+w)->b);
 		}
@@ -891,8 +914,10 @@ int main(int argc, char *argv[])
 #if TIME
 		timediff = (timer2.tv_sec+timer2.tv_usec*0.000001)-(timer1.tv_sec+timer1.tv_usec*0.000001);
 		
-		printf("\n"BLACK BACKYELLOW"Generated pixels within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n", timediff);
-		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n", (((sizeof(PICTURE)*height*width)/1000000)/timediff));
+		printf("\n"BLACK BACKYELLOW"Generated pixels within "BOLDBLACK BACKYELLOW"%f"BLACK BACKYELLOW" secs"RESET"\n",
+			timediff);
+		printf(BLACK BACKYELLOW"Generate Speed: "BOLDBLACK BACKYELLOW"%.2fMB/s"RESET"\n\n",
+			(((sizeof(PICTURE)*height*width)/1000000)/timediff));
 #endif
 		
 	}
@@ -916,7 +941,8 @@ void cntrl_c_handler_pixelgen(int dummy)
 	
 	globalKey = getkey();
 	
-	printf(BOLD"\nYou just typed CTRL+C\nPixelgenerator is closing everything...\n\n"RESET);
+	printf(BOLD"\nYou just typed CTRL+C\n"
+		"Pixelgenerator is closing everything...\n\n"RESET);
 	
 /* ---- CLOSING SHARED MEMORY ---- */
 	
