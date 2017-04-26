@@ -7,7 +7,7 @@ The writepic program is reading the pixels from the shared memory and writes the
 
 The whole process is running in a while loop and zooms out of the standard zoom.  
   
-### Please run writepic before pixelgen and stop it before pixelgen due to data loss!  
+### Please run writepic before pixelgen and stop it before pixelgen due to possible data loss!  
   
 Debug messages appear read and time calculation messages appear in yellow background  
 Format input:
