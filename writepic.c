@@ -51,6 +51,15 @@
  *              Tried to remove global variables requested for the signal handler,
  *              but not working with normal POSIX
  *
+==9126== 
+==9126== HEAP SUMMARY:
+==9126==     in use at exit: 0 bytes in 0 blocks
+==9126==   total heap usage: 6 allocs, 6 frees, 5,769,904 bytes allocated
+==9126== 
+==9126== All heap blocks were freed -- no leaks are possible
+==9126== 
+==9126== For counts of detected and suppressed errors, rerun with: -v
+==9126== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
  *
  */
 

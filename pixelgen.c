@@ -101,6 +101,25 @@
  *              I use color map 9 (less iterations (1000-5000)) and default for
  *              undefined much iterations
  *              PT1, SINUS are somehow not working well, but made by Helmut Resch
+ *
+==9129== Syscall param msgsnd(msgp->mtext) points to uninitialised byte(s)
+==9129==    at 0x419F9C2: msgsnd (msgsnd.c:29)
+==9129==    by 0x804953A: main (pixelgen.c:476)
+==9129==  Address 0xbeda9438 is on thread 1's stack
+==9129==  in frame #1, created by main (pixelgen.c:119)
+==9129== 
+
+==9129== 
+==9129== HEAP SUMMARY:
+==9129==     in use at exit: 0 bytes in 0 blocks
+==9129==   total heap usage: 2 allocs, 2 frees, 5,761,024 bytes allocated
+==9129== 
+==9129== All heap blocks were freed -- no leaks are possible
+==9129== 
+==9129== For counts of detected and suppressed errors, rerun with: -v
+==9129== Use --track-origins=yes to see where uninitialised values come from
+==9129== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+ *
  */
 
 #include "myhead.h"
