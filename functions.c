@@ -10,6 +10,7 @@
  *          Rev.: 06, 18.04.2017 - Changed helpdesk function
  *                                 for color type
  *          Rev.: 07, 26.04.2017 - Changed C style, for 80 chars per line
+ *          Rev.: 08, 26.04.2017 - Checking return value of system
  *
  *
  * \information Some functions from my previous tasks due to
@@ -27,7 +28,13 @@
 
 void clear(void)
 {
-	system("clear");
+	int error;
+	error = system("clear");
+	if (error == 0 || error == -1)
+	{
+		perror(BOLD"\nERROR: system: Couldn't clear screen"RESET);
+	}
+	
 	helpdesk_1();
 }
 
@@ -35,7 +42,12 @@ void clear(void)
 
 void clearNoHelp(void)
 {
-	system("clear");
+	int error;
+	error = system("clear");
+	if (error == 0 || error == -1)
+	{
+		perror(BOLD"\nERROR: system: Couldn't clear screen"RESET);
+	}
 }
 
 /* ---- HELPDESK FUNCTION ---- */
